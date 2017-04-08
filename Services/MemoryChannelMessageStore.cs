@@ -7,7 +7,7 @@ namespace LaoS.Services
 {
     public class MemoryChannelMessageStore : IChannelMessageStore
     {
-        private List<Message> store { get; set; }
+        private List<Message> store { get; set; } = new List<Message>();
         public IReadOnlyList<Message> GetAllPast(int amount)
         {
             return this.store.GetRange(0,amount);

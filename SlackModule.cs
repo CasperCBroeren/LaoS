@@ -11,15 +11,19 @@ namespace LaoS
     {
         private IClientSocketHandler clientSocketHandler;
         private IChannelMessageStore messageStore;
+        private ISlackApi slackApi;
+
         public SlackModule(IChannelMessageStore messageStore,
-                          IClientSocketHandler clientSocketHandler)
+                          IClientSocketHandler clientSocketHandler,
+                          ISlackApi slackApi)
         {
             this.messageStore = messageStore;
             this.clientSocketHandler = clientSocketHandler;
+            this.slackApi = slackApi;
 
             Get("/", args => "Hello from LaoS; Look at our Slack");
             Post("/main", args =>
-            {
+            { 
                 var validation = this.Bind<VerificationRequest>();
                 if (validation.Type == "url_verification")
                 {
@@ -27,16 +31,17 @@ namespace LaoS
                 }
                 else
                 {
-                    var message = this.Bind<Message>();
+                    var message = this.Bind<EventCallback<Message>>();
                     return HandleMessage(message);
                 } 
             });
         }
 
-        private Task<string> HandleMessage(Message message)
+        private Task<string> HandleMessage(EventCallback<Message> eventCallback)
         {
-            this.messageStore.StoreMessage(message);
-            this.clientSocketHandler.SendMessageToClients(message);
+            Console.WriteLine($"{eventCallback.Event.User}: {eventCallback.Event.Text} ");
+            this.messageStore.StoreMessage(eventCallback.Event);
+            this.clientSocketHandler.SendMessageToClients(eventCallback.Event);
             return Task.FromResult("OK");
         }
 
