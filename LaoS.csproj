@@ -10,6 +10,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="1.1.1" />
     <PackageReference Include="Nancy" Version="2.0.0-clinteastwood" />
     <PackageReference Include="Slack.Webhooks.Core" Version="1.0.1" />
+    
   </ItemGroup>
 
   <ItemGroup>

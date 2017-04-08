@@ -1,12 +1,11 @@
-﻿
-using Nancy;
+﻿using Nancy;
 using WebSocketAccept = System.Action<
            System.Collections.Generic.IDictionary<string, object>, // WebSocket Accept parameters
            System.Func< // WebSocketFunc callback
                System.Collections.Generic.IDictionary<string, object>, // WebSocket environment
                System.Threading.Tasks.Task>>;
 using WebSocketSendAsync = System.Func<
-               System.ArraySegment<byte>, // data
+               string, // data
                int, // message type
                bool, // end of message
                System.Threading.CancellationToken, // cancel
@@ -35,11 +34,21 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Net.WebSockets;
 using Nancy.Owin;
+using LaoS.Interfaces;
+using LaoS.Models;
+using System.Threading.Tasks; 
 
 namespace LaoS
 {
-    public class WebsiteClientModule : NancyModule
+    public class WebsiteClientModule : NancyModule, IClientSocketHandler
     {
+        public WebSocketSendAsync wsSendAsync; 
+        public WebSocketReceiveAsync wsRecieveAsync; 
+        public WebSocketCloseAsync wsCloseAsync;
+        public string wsVersion;
+        public CancellationToken wsCallCancelled;
+              
+
         public WebsiteClientModule() : base("socket")
         {
             Get("/", x =>
@@ -62,12 +71,12 @@ namespace LaoS
                     }
 
                     wsAccept(acceptOptions, async wsEnv => {
-                        var wsSendAsync = (WebSocketSendAsync)wsEnv["websocket.SendAsync"];
-                        var wsRecieveAsync = (WebSocketReceiveAsync)wsEnv["websocket.ReceiveAsync"];
-                        var wsCloseAsync = (WebSocketCloseAsync)wsEnv["websocket.CloseAsync"];
-                        var wsVersion = (string)wsEnv["websocket.Version"];
-                        var wsCallCancelled = (CancellationToken)wsEnv["websocket.CallCancelled"];
-
+                         wsSendAsync = (WebSocketSendAsync)wsEnv["websocket.SendAsync"];
+                         wsRecieveAsync = (WebSocketReceiveAsync)wsEnv["websocket.ReceiveAsync"];
+                         wsCloseAsync = (WebSocketCloseAsync)wsEnv["websocket.CloseAsync"];
+                         wsVersion = (string)wsEnv["websocket.Version"];
+                         wsCallCancelled = (CancellationToken)wsEnv["websocket.CallCancelled"];
+              
                         // note: make sure to catch errors when calling sendAsync, receiveAsync and closeAsync
                         // for simiplicity this code does not handle errors
                         var buffer = new ArraySegment<byte>(new byte[6]);
@@ -80,7 +89,7 @@ namespace LaoS
                             int? closeStatus = webSocketResultTuple.Item4;
                             string closeStatusDescription = webSocketResultTuple.Item5;
                              
-                            await wsSendAsync(new ArraySegment<byte>(buffer.Array, 0, count.Value), 1, wsEndOfMessge, wsCallCancelled);
+                            await wsSendAsync("open", 1, wsEndOfMessge, wsCallCancelled);
 
                             if (wsEndOfMessge)
                                 break;
@@ -110,5 +119,12 @@ namespace LaoS
             return headers.TryGetValue(key, out value) && value != null ? string.Join(",", value) : null;
         }
 
+        async Task<bool> IClientSocketHandler.SendMessageToClients(Message message)
+        { 
+            await  wsSendAsync(message.Text, 0, true, wsCallCancelled);
+
+            return true;
+        }
+ 
     }
 }
