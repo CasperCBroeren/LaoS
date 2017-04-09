@@ -12,14 +12,17 @@ namespace LaoS
         private IClientSocketHandler clientSocketHandler;
         private IChannelMessageStore messageStore;
         private ISlackApi slackApi;
+        private IAccountService settingService;
 
         public SlackModule(IChannelMessageStore messageStore,
                           IClientSocketHandler clientSocketHandler,
-                          ISlackApi slackApi)
+                          ISlackApi slackApi,
+                          IAccountService settingService)
         {
             this.messageStore = messageStore;
             this.clientSocketHandler = clientSocketHandler;
             this.slackApi = slackApi;
+            this.settingService = settingService;
 
             Get("/", args => "Hello from LaoS; Look at our Slack");
             Post("/main", args =>
@@ -46,7 +49,7 @@ namespace LaoS
         }
 
         private Task<string> HandleValidation(VerificationRequest validation)
-        {  
+        {               
             return Task.FromResult(validation.Challenge);
         }
     }

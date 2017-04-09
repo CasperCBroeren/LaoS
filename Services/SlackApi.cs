@@ -5,7 +5,6 @@ using LaoS.Models;
 using System.Net;
 using System.Threading.Tasks;
 using System.IO;
-using Nancy.Json;
 using Newtonsoft.Json;
 
 namespace LaoS.Services
@@ -13,8 +12,14 @@ namespace LaoS.Services
     public class SlackApi : ISlackApi
     {
         private Dictionary<string, User> users = new Dictionary<string, User>();
+        private IAccountService accountService;
 
-        public async Task<User> GetUser(string id)
+        public SlackApi(IAccountService accountService)
+        {
+            this.accountService = accountService;
+        }
+
+        public async Task<User> GetUser(string account, string id)
         {
             if (this.users.ContainsKey(id))
             {
@@ -22,15 +27,16 @@ namespace LaoS.Services
             }
             else
             {
-                await RefreshUserListFromSlack();
+                await RefreshUserListFromSlack(account);
                 return this.users[id];
             }
         }
 
-        private async Task<bool> RefreshUserListFromSlack()
+        private async Task<bool> RefreshUserListFromSlack(string account)
         {
+            var accountSettings = await accountService.GetSettings(account);
             string url = "https://slack.com/api/users.list";
-            string payload = "?token=xoxp-159132731712-160520715878-163359078389-917888860986b8e99e791ac0f06f3d48";
+            string payload = "?token="+ accountSettings.SlackToken;
             var request = WebRequest.Create(url+payload);
             var response = (HttpWebResponse)(await request.GetResponseAsync());
             using (var reader = new StreamReader(response.GetResponseStream()))

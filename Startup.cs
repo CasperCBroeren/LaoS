@@ -14,6 +14,9 @@ namespace LaoS
             container.Register<IChannelMessageStore, MemoryChannelMessageStore>().AsSingleton();
             container.Register<IClientSocketHandler, WebsiteClientModule>().AsSingleton();
             container.Register<ISlackApi, SlackApi>().AsSingleton();
+            container.Register<IAccountService, AzureAccountService>().AsSingleton();
+            container.Register<IAppSettings, JsonFileIAppSettings>().AsSingleton();
+
             app.UseOwin(x => x.UseNancy());
         }
     }
