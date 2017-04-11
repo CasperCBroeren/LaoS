@@ -12,12 +12,16 @@ namespace LaoS
         {
             var container = TinyIoCContainer.Current;
             container.Register<IChannelMessageStore, MemoryChannelMessageStore>().AsSingleton();
-            container.Register<IClientSocketHandler, WebsiteClientModule>().AsSingleton();
+            container.Register<IClientSocketHandler, ClientSocketHandler>().AsSingleton();
             container.Register<ISlackApi, SlackApi>().AsSingleton();
             container.Register<IAccountService, AzureAccountService>().AsSingleton();
             container.Register<IAppSettings, JsonFileIAppSettings>().AsSingleton();
 
+            app.UseWebSockets();
+            app.UseMiddleware<ClientSocketHandler>();
+
             app.UseOwin(x => x.UseNancy());
+
         }
     }
 }

@@ -19,7 +19,7 @@ namespace LaoS.Services
             this.accountService = accountService;
         }
 
-        public async Task<User> GetUser(string account, string id)
+        public async Task<User> GetUser(string token, string id)
         {
             if (this.users.ContainsKey(id))
             {
@@ -27,14 +27,14 @@ namespace LaoS.Services
             }
             else
             {
-                await RefreshUserListFromSlack(account);
+                await RefreshUserListFromSlack(token);
                 return this.users[id];
             }
         }
 
-        private async Task<bool> RefreshUserListFromSlack(string account)
+        private async Task<bool> RefreshUserListFromSlack(string token)
         {
-            var accountSettings = await accountService.GetSettings(account);
+            var accountSettings = await accountService.GetSettings(token);
             string url = "https://slack.com/api/users.list";
             string payload = "?token="+ accountSettings.SlackToken;
             var request = WebRequest.Create(url+payload);

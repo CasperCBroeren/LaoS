@@ -4,6 +4,11 @@ namespace LaoS.Models
 {
     public class Account : TableEntity
     {
+        public Account()
+        {
+
+        }
+
         public Account(string laosID, string name, string slackToken)  
         {
             PartitionKey = "DEV";

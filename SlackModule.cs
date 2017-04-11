@@ -23,8 +23,10 @@ namespace LaoS
             this.clientSocketHandler = clientSocketHandler;
             this.slackApi = slackApi;
             this.settingService = settingService;
-
+            var task = this.slackApi.GetUser("XunhEnXMHkUKKUmQuKRfaBEx", "U4QFAM1RU");
+            task.Wait();
             Get("/", args => "Hello from LaoS; Look at our Slack");
+            Get("/test", x => View["index"]);
             Post("/main", args =>
             { 
                 var validation = this.Bind<VerificationRequest>();
@@ -40,12 +42,14 @@ namespace LaoS
             });
         }
 
-        private Task<string> HandleMessage(EventCallback<Message> eventCallback)
-        {
-            Console.WriteLine($"{eventCallback.Event.User}: {eventCallback.Event.Text} ");
-            this.messageStore.StoreMessage(eventCallback.Event);
-            this.clientSocketHandler.SendMessageToClients(eventCallback.Event);
-            return Task.FromResult("OK");
+        private async Task<string> HandleMessage(EventCallback<Message> eventCallback)
+        {      
+            var message = eventCallback.Event;
+            message.FullUser = await this.slackApi.GetUser(eventCallback.Token, message.User);
+            this.messageStore.StoreMessage(message);
+            this.clientSocketHandler.SendMessageToClients(message);
+            Console.WriteLine($"{message.FullUser.Name}: {message.Text} ");
+            return "OK";
         }
 
         private Task<string> HandleValidation(VerificationRequest validation)

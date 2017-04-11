@@ -14,6 +14,8 @@ namespace LaoS.Models
 
         public string User { get; set; }
 
+        public User FullUser { get; set; }
+
         public string Ts { get; set; }
 
         public bool Is_Starred { get; set; }

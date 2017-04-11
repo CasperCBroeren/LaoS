@@ -6,6 +6,6 @@ namespace LaoS.Interfaces
 {
     public interface ISlackApi
     {
-        Task<User> GetUser(string account, string id);
+        Task<User> GetUser(string token, string id);
     }
 }
