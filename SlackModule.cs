@@ -9,22 +9,21 @@ namespace LaoS
 {
     public class SlackModule : Nancy.NancyModule
     {
-        private IClientSocketHandler clientSocketHandler;
+        private ISocketClientManager clientManager;
         private IChannelMessageStore messageStore;
         private ISlackApi slackApi;
         private IAccountService settingService;
 
         public SlackModule(IChannelMessageStore messageStore,
-                          IClientSocketHandler clientSocketHandler,
+                          ISocketClientManager clientManager,
                           ISlackApi slackApi,
                           IAccountService settingService)
         {
             this.messageStore = messageStore;
-            this.clientSocketHandler = clientSocketHandler;
+            this.clientManager = clientManager;
             this.slackApi = slackApi;
-            this.settingService = settingService;
-            var task = this.slackApi.GetUser("XunhEnXMHkUKKUmQuKRfaBEx", "U4QFAM1RU");
-            task.Wait();
+            this.settingService = settingService; 
+ 
             Get("/", args => "Hello from LaoS; Look at our Slack");
             Get("/test", x => View["index"]);
             Post("/main", args =>
@@ -35,20 +34,30 @@ namespace LaoS
                     return HandleValidation(validation);
                 }
                 else
-                {
-                    var message = this.Bind<EventCallback<Message>>();
+                {                    
+                    var message = this.Bind<EventCallback<Message>>();                  
                     return HandleMessage(message);
                 } 
             });
         }
 
         private async Task<string> HandleMessage(EventCallback<Message> eventCallback)
-        {      
+        {               
             var message = eventCallback.Event;
-            message.FullUser = await this.slackApi.GetUser(eventCallback.Token, message.User);
-            this.messageStore.StoreMessage(message);
-            this.clientSocketHandler.SendMessageToClients(message);
-            Console.WriteLine($"{message.FullUser.Name}: {message.Text} ");
+            var settings = await this.settingService.GetSettings(eventCallback.Token);
+            if (settings.Channel == message.Channel)
+            {
+                if (!String.IsNullOrEmpty(message.User))
+                {
+                    message.FullUser = await this.slackApi.GetUser(eventCallback.Token, message.User);
+                }
+                if (!message.Hidden)
+                {
+                    this.messageStore.StoreMessage(message);
+                }
+                this.clientManager.SendMessageToClients(message);
+                Console.WriteLine($"{message.FullUser.Name}: {message.Text} ");
+            }
             return "OK";
         }
 

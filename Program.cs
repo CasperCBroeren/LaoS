@@ -7,7 +7,7 @@ namespace LaoS
     {
         static void Main(string[] args)
         {
-            var host = new WebHostBuilder()
+            var host = new WebHostBuilder()            
              .UseContentRoot(Path.Combine(Directory.GetCurrentDirectory(),"wwwroot"))
              .UseKestrel()
              .UseUrls("http://*:5000")

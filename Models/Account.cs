@@ -20,5 +20,6 @@ namespace LaoS.Models
         public string LaosID { get { return RowKey; } set { RowKey = value; } }
         public string Name { get; set; }
         public string SlackToken { get; set; }
+        public string Channel { get; set; }
     }
 }

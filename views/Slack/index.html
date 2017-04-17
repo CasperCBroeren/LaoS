@@ -9,9 +9,7 @@
         var output, websocket;
         function init() {
             output = document.getElementById("output");
-            testWebSocket();
-        }
-        function testWebSocket() {
+       
             websocket = new WebSocket(wsUri);
             websocket.onopen = function (evt) { onOpen(evt); };
             websocket.onclose = function (evt) { onClose(evt); };
@@ -19,22 +17,20 @@
             websocket.onerror = function (evt) { onError(evt); };
         }
         function onOpen(evt) {
-            writeToScreen("CONNECTED"); 
+            console.log("CONNECTED"); 
         }
         function onClose(evt) {
-            writeToScreen("DISCONNECTED");
+            console.log("DISCONNECTED");
         }
         function onMessage(evt) {
-            writeToScreen('<span style="color: blue;">RESPONSE: ' + evt.data + '</span>');
-            
+            var event = JSON.parse(evt.data);
+            writeToScreen('<span class="message"><span class="sender">' + event.senderName + ': </span>' + event.message + '</span><br><span class="on">' + event.on + '</span>');
+            return false;
         }
         function onError(evt) {
-            writeToScreen('<span style="color: red;">ERROR:</span> ' + evt.data);
+            console.log(evt.data);
         }
-        function doSend(message) {
-            writeToScreen("SENT: " + message);
-            websocket.send(message);
-        }
+       
         function writeToScreen(message) {
             var pre = document.createElement("p") 
             pre.innerHTML = message;

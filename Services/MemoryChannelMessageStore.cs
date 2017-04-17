@@ -1,20 +1,30 @@
-using System.Collections.Generic;
-using System.Linq;
+using System.Collections.Generic; 
 using LaoS.Models;
 using LaoS.Interfaces;
+using System.Linq;
 
 namespace LaoS.Services
 {
     public class MemoryChannelMessageStore : IChannelMessageStore
     {
-        private List<Message> store { get; set; } = new List<Message>();
+        private Dictionary<string, Message> store { get; set; } = new Dictionary<string, Message>();
         public IReadOnlyList<Message> GetAllPast(int amount)
         {
-            return this.store.GetRange(0,amount);
+            if (this.store.Count > amount)
+            {
+                return this.store.Values.ToList().GetRange(0, amount);
+            }
+            else
+            {
+                return this.store.Values.ToList();
+            }
         }
         public bool StoreMessage(Message message)
         {
-            this.store.Add(message);
+            if (!this.store.ContainsKey(message.Event_Ts.ToString()))
+            {
+                this.store.Add(message.Event_Ts.ToString(), message);
+            }
             return true;
         }
     }

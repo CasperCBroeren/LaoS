@@ -1,8 +1,6 @@
 ﻿using LaoS.Interfaces;
-using LaoS.Services;
 using Microsoft.AspNetCore.Builder;
 using Nancy.Owin;
-using Nancy.TinyIoc;
 
 namespace LaoS
 {
@@ -10,18 +8,13 @@ namespace LaoS
     {
         public void Configure(IApplicationBuilder app)
         {
-            var container = TinyIoCContainer.Current;
-            container.Register<IChannelMessageStore, MemoryChannelMessageStore>().AsSingleton();
-            container.Register<IClientSocketHandler, ClientSocketHandler>().AsSingleton();
-            container.Register<ISlackApi, SlackApi>().AsSingleton();
-            container.Register<IAccountService, AzureAccountService>().AsSingleton();
-            container.Register<IAppSettings, JsonFileIAppSettings>().AsSingleton();
-
             app.UseWebSockets();
-            app.UseMiddleware<ClientSocketHandler>();
+            app.Map("/main", branch => branch.UseOwin(x => x.UseNancy()));
 
-            app.UseOwin(x => x.UseNancy());
-
+            app.Map("/socket", branch =>
+            branch.UseMiddleware<ClientSocketHandler>(CustomBootstrapper.Container.Resolve<ISocketClientManager>())
+            .UseWebSockets()
+            );
         }
     }
 }

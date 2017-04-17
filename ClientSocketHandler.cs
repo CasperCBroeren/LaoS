@@ -1,62 +1,40 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using LaoS.Interfaces;
-using LaoS.Models;
 using Microsoft.AspNetCore.Http;
-using System.Collections.Generic;
 using System.Net.WebSockets;
-using System.Threading;
-using System.Text;
 
 namespace LaoS
 {
-    public class ClientSocketHandler : IClientSocketHandler
+    public class ClientSocketHandler
     {
-        private readonly List<WebSocket> clients = new List<WebSocket>();
+
         private readonly RequestDelegate _next;
+        private ISocketClientManager clientManager;
+
         public ClientSocketHandler()
         {
 
         }
 
-        public ClientSocketHandler(RequestDelegate next)
+        public ClientSocketHandler(RequestDelegate next, ISocketClientManager clientManager)
         {
             _next = next;
+            this.clientManager = clientManager;
         }
         public async Task Invoke(HttpContext context)
         {
-            if (context.Request.Path == "/socket")
-            {
-                if (context.WebSockets.IsWebSocketRequest)
+
+            if (context.WebSockets.IsWebSocketRequest)
+            { 
+                var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+                clientManager.AddClient(webSocket);
+                while (webSocket.State == WebSocketState.Open)
                 {
-                    WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                    clients.Add(webSocket); 
-                }
-                else
-                {
-                    context.Response.StatusCode = 400;
+
                 }
             }
-            else
-            {
-                await _next(context);
-            }
-        }
-        public Task<bool> SendMessageToClients(Message message)
-        {
-            var buffer = new byte[1024 * 4];
-            foreach (var client in this.clients)
-            {
-                SendString(client, message.Text, CancellationToken.None);
-            }
-            return Task.FromResult(true);
+             
         }
 
-        private Task SendString(WebSocket ws, String data, CancellationToken cancellation)
-        {
-            var encoded = Encoding.UTF8.GetBytes(data);
-            var buffer = new ArraySegment<Byte>(encoded, 0, encoded.Length);
-            return ws.SendAsync(buffer, WebSocketMessageType.Text, true, cancellation);
-        }
     }
 }
