@@ -17,11 +17,14 @@
             width: 32px;
             margin-right: 10px;
         }
+        .on {
+            font-size: 10px;
+        }
     </style>
 </head>
 <body>
     <script> 
-        var  wsUri = "ws://" + window.location.host + "/socket"; 
+        var wsUri = ((location.protocol === "https:") ? "wss://" : "ws://") + window.location.host + "/socket"; 
         var output, websocket;
         var emoji = new EmojiConvertor();
 
@@ -56,8 +59,8 @@
         }
         function onMessage(evt) {
             var event = JSON.parse(evt.data);
-            var formated = applyFormat(event.message);
-            formated = emoji.replace_colons(formated);
+            var formated = emoji.replace_colons(event.message);
+                formated = applyFormat(formated);
             var date = moment(event.on).fromNow();
             writeToScreen('<span class="message" id="' + event.messageId + '"><span class="sender"><img class="userIcon" src="' + event.senderIcon+'" />' + event.senderName + ': </span>' + formated + '</span><br><span class="on" data-on="'+event.on+'">' + date + '</span>');
             return true;
@@ -65,12 +68,12 @@
 
         function applyFormat(text)
         {
-            return text.replace(/\*(\w*)\*/g, '<b>$1</b>')
-                .replace(/\_(\w*)\_/g, '<i>$1</i>')
-                .replace(/\~(\w*)\~/g, '<del>$1</del>')
-                .replace(/\`(\w*)\`/g, '<span class="code">$1</span>')
-                .replace(/\`\`\`(\w*)\`\`\`/g, '<span class="preformated">$1</span>')
-                .replace(/\>(\w*)\*/g, '<span class="quote">$1</span>');
+            return text.replace(/\b\*(\.*?)\*\b/g, '<b>$1</b>')
+                .replace(/\b\_(\.*?)\_\b/g, '<i>$1</i>')
+                .replace(/\b\~(\.*?)\~\b/g, '<del>$1</del>')
+                .replace(/\b\`(\.*?)\`\b/g, '<span class="code">$1</span>')
+                .replace(/\b\`\`\`(\.*?)\`\`\`\b/g, '<span class="preformated">$1</span>')
+                .replace(/\b\>(\.*?)\*\b/g, '<span class="quote">$1</span>');
         }
 
         function onError(evt) {
@@ -80,7 +83,7 @@
         function writeToScreen(message) {
             var pre = document.createElement("p") 
             pre.innerHTML = message;
-            output.appendChild(pre);
+            output.insertAdjacentElement('afterbegin', pre);
         }
         window.addEventListener("load", init, false);
     </script>
