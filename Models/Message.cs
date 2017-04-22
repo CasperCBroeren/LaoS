@@ -14,7 +14,7 @@ namespace LaoS.Models
 
         public string User { get; set; }
 
-        public User FullUser { get; set; }
+        public User FullUser { get; set; }  
 
         public double Ts { get; set; }
 
@@ -31,5 +31,7 @@ namespace LaoS.Models
         public double Event_Ts { get; set; }
 
         public EditAction Edited { get; set; }
+
+        public List<Attachement> Attachements { get; set; }
     }
 }

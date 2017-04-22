@@ -25,8 +25,9 @@ namespace LaoS
         {
 
             if (context.WebSockets.IsWebSocketRequest)
-            { 
+            {   
                 var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+                
                 clientManager.AddClient(webSocket);
                 while (webSocket.State == WebSocketState.Open)
                 {

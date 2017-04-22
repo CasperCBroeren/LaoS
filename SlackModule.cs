@@ -4,6 +4,8 @@ using Nancy.ModelBinding;
 using System.Threading.Tasks;
 using Slack.Webhooks.Core;
 using LaoS.Interfaces;
+using Nancy.Extensions;
+using Nancy.IO;
 
 namespace LaoS
 {
@@ -25,9 +27,10 @@ namespace LaoS
             this.settingService = settingService; 
  
             Get("/", args => "Hello from LaoS; Look at our Slack");
-            Get("/test", x => View["index"]);
-            Post("/main", args =>
-            { 
+            Get("/test", x => View["index", Guid.NewGuid()]);
+            Post("/eventhandler", args =>
+            {
+                string raw = RequestStream.FromStream(Request.Body).AsString();
                 var validation = this.Bind<VerificationRequest>();
                 if (validation.Type == "url_verification")
                 {

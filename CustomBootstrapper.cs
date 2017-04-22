@@ -3,6 +3,7 @@ using LaoS.Services;
 using Nancy;
 using Nancy.Bootstrapper;
 using Nancy.TinyIoc;
+using Nancy.Conventions;
 
 namespace LaoS
 {
@@ -17,6 +18,12 @@ namespace LaoS
             container.Register<IAccountService, AzureAccountService>().AsSingleton();
             container.Register<IAppSettings, JsonFileIAppSettings>().AsSingleton();
             Container = container;
+        }
+
+        protected override void ConfigureConventions(NancyConventions nancyConventions)
+        {
+            nancyConventions.StaticContentsConventions.Add(StaticContentConventionBuilder.AddDirectory("wwwroot", @"wwwroot"));
+            base.ConfigureConventions(nancyConventions);
         }
     }
 }
