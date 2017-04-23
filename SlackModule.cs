@@ -1,8 +1,7 @@
 ﻿using System;
 using LaoS.Models;
 using Nancy.ModelBinding;
-using System.Threading.Tasks;
-using Slack.Webhooks.Core;
+using System.Threading.Tasks; 
 using LaoS.Interfaces;
 using Nancy.Extensions;
 using Nancy.IO;
@@ -58,7 +57,7 @@ namespace LaoS
                 {
                     this.messageStore.StoreMessage(message);
                 }
-                this.clientManager.SendMessageToClients(message);
+                await this.clientManager.SendMessageToClients(message);
                 Console.WriteLine($"{message.FullUser.Name}: {message.Text} ");
             }
             return "OK";

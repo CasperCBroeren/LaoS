@@ -40,11 +40,20 @@ namespace LaoS.Services
         }
 
         public Task<bool> SendMessageToClients(Message message)
-        { 
+        {
+            List<WebSocket> toRemove = new List<WebSocket>();
             foreach (var client in this.clients)
             {
-                Send(client, new SocketMessage(message), CancellationToken.None);
+                if (client.State == WebSocketState.Open)
+                {
+                    Send(client, new SocketMessage(message), CancellationToken.None);
+                }
+                else if (client.State == WebSocketState.Closed || client.State == WebSocketState.CloseReceived || client.State == WebSocketState.CloseSent)
+                {
+                    toRemove.Add(client);
+                }
             }
+            this.clients.RemoveAll(x => toRemove.Contains(x));
             return Task.FromResult(true);
         }
 
