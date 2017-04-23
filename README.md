@@ -41,7 +41,7 @@ If you want send me tips on how to improve this
 7. Account system for adding new channels :D
 
 ### Thanks to
- - dotNetCore 
- - Moment.js
- - iamcal for js emoji
- - joewalnes for reconnecting-websocket
+ - [dotNetCore](https://www.microsoft.com/net)
+ - [Moment.js](https://momentjs.com/)
+ - [iamcal for js emoji](https://github.com/iamcal/js-emoji)
+ - [joewalnes for reconnecting-websocket](https://github.com/joewalnes/reconnecting-websocket)
