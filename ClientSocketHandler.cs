@@ -2,6 +2,9 @@
 using LaoS.Interfaces;
 using Microsoft.AspNetCore.Http;
 using System.Net.WebSockets;
+using System;
+using System.Threading;
+using System.Text;
 
 namespace LaoS
 {
@@ -31,7 +34,19 @@ namespace LaoS
                 clientManager.AddClient(webSocket);
                 while (webSocket.State == WebSocketState.Open)
                 {
+                    var buffer = new byte[1024 * 4];
+                    var result = await webSocket.ReceiveAsync(buffer: new ArraySegment<byte>(buffer),
+                                                              cancellationToken: CancellationToken.None);
 
+                    if (result.MessageType == WebSocketMessageType.Close)
+                    {
+                        await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closed in server by the client", CancellationToken.None);
+                        clientManager.RemoveClient(webSocket);
+                    }
+                    else
+                    {
+                        clientManager.ReceivedMessageFromClient(webSocket, result, Encoding.UTF8.GetString(buffer, 0, result.Count));
+                    }
                 }
             }
              

@@ -26,7 +26,7 @@ namespace LaoS.Services
             }
             else
             {
-                return this.store.Values.ToList();
+                return this.store.Values.ToList().OrderBy(x=>x.Event_Ts).ToList();
             }
         }
         public bool StoreMessage(SlackMessage message)

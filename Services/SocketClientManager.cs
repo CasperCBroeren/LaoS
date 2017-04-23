@@ -19,34 +19,35 @@ namespace LaoS.Services
         private readonly List<WebSocket> clients = new List<WebSocket>();
         private IChannelMessageStore messageStore;
 
-        public void AddClient(WebSocket socket)
+        public async Task AddClient(WebSocket socket)
         {
             clients.Add(socket);
             foreach (var message in this.messageStore.GetAllPast(10))
             {
-                Send(socket, new SocketMessage(message), CancellationToken.None);
+                await Send(socket, new SocketMessage(message), CancellationToken.None);
             }
         }
 
-        private Task Send(WebSocket client, SocketMessage socketMessage, CancellationToken cancelToken)
+        private async Task Send(WebSocket client, SocketMessage socketMessage, CancellationToken cancelToken)
         {
             var asString = JsonConvert.SerializeObject(socketMessage);
-            return SendString(client, asString, cancelToken);
+            await SendString(client, asString, cancelToken);
         }
 
-        public void RemoveClient(WebSocket socket)
+        public Task RemoveClient(WebSocket socket)
         {
             clients.Remove(socket);
+            return Task.CompletedTask;
         }
 
-        public Task<bool> SendMessageToClients(SlackMessage message)
+        public async Task<bool> SendMessageToClients(SlackMessage message)
         {
             List<WebSocket> toRemove = new List<WebSocket>();
             foreach (var client in this.clients)
             {
                 if (client.State == WebSocketState.Open)
                 {
-                    Send(client, new SocketMessage(message), CancellationToken.None);
+                    await Send(client, new SocketMessage(message), CancellationToken.None);
                 }
                 else if (client.State == WebSocketState.Closed || client.State == WebSocketState.CloseReceived || client.State == WebSocketState.CloseSent)
                 {
@@ -54,14 +55,19 @@ namespace LaoS.Services
                 }
             }
             this.clients.RemoveAll(x => toRemove.Contains(x));
-            return Task.FromResult(true);
+            return true;
         }
 
-        private Task SendString(WebSocket ws, String data, CancellationToken cancellation)
+        private async Task SendString(WebSocket ws, String data, CancellationToken cancellation)
         {
             var encoded = Encoding.UTF8.GetBytes(data);
             var buffer = new ArraySegment<Byte>(encoded, 0, encoded.Length);
-            return ws.SendAsync(buffer, WebSocketMessageType.Text, true, cancellation);
+            await ws.SendAsync(buffer, WebSocketMessageType.Text, true, cancellation);
+        }
+
+        public  Task ReceivedMessageFromClient(WebSocket webSocket, WebSocketReceiveResult result, string rawResult)
+        {
+            return Task.CompletedTask;
         }
     }
 }
