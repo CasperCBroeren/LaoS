@@ -14,14 +14,26 @@ namespace LaoS.Models
             dtDateTime = dtDateTime.AddSeconds(unixTimeStamp).ToLocalTime();
             return dtDateTime;
         }
-        public SocketMessage(Message message)
+        public SocketMessage(SlackMessage message)
         {
-            this.SenderName = message.FullUser.Name;
-            this.SenderIcon = message.FullUser.Profile.Image_72;
-            this.Action = "message";
-            this.Message = message.Text;
+            this.SenderName = message.FullUser?.Name;
+            this.SenderIcon = message.FullUser?.Profile.Image_72;
+            if (message.Hidden && message.Subtype == "message_deleted")
+            {
+                this.Action = "delete";
+                this.MessageId = message.Deleted_Ts.ToString();
+            } 
+            else
+            {
+
+                this.Action = "message";
+                this.MessageId = message.Ts.ToString();
+                this.Edited = (message.Subtype == "message_changed");
+                this.Message = message.Text;
+            }
+            
             this.On = UnixTimeStampToDateTime(message.Event_Ts);
-            this.MessageId = message.Ts.ToString();
+
         }
 
         [JsonProperty("senderName")]
@@ -38,5 +50,7 @@ namespace LaoS.Models
         public string Action { get; set; }
         [JsonProperty("reactions")]
         public List<SocketReaction> Reactions { get; set; }
+        [JsonProperty("edited")]
+        public bool Edited { get; private set; }
     }
 }

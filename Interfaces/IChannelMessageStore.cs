@@ -5,8 +5,10 @@ namespace LaoS.Interfaces
 {
     public interface IChannelMessageStore
     {
-        IReadOnlyList<Message> GetAllPast(int amount);
+        IReadOnlyList<SlackMessage> GetAllPast(int amount);
 
-        bool StoreMessage(Message message);
+        bool StoreMessage(SlackMessage message);
+        void DeleteMessage(SlackMessage message);
+        SlackMessage UpdateMessage(SlackMessage message);
     }
 }

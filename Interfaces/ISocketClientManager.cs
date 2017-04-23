@@ -8,6 +8,6 @@ namespace LaoS.Interfaces
     {
         void AddClient(WebSocket socket);
         void RemoveClient(WebSocket socket);
-        Task<bool> SendMessageToClients(Message message);
+        Task<bool> SendMessageToClients(SlackMessage message);
     }
 }

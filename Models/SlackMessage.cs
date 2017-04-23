@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace LaoS.Models
 {
-    public class Message
+    public class SlackMessage
     {
         public string Type { get; set; }
 
@@ -29,9 +29,11 @@ namespace LaoS.Models
         public double Deleted_Ts { get; set; }
 
         public double Event_Ts { get; set; }
-
-        public EditAction Edited { get; set; }
+        
+        public EditMessage Message { get; set; }
 
         public List<Attachement> Attachements { get; set; }
+
+        public List<Link> Links { get; set; }
     }
 }

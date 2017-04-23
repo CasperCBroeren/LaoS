@@ -39,7 +39,7 @@ namespace LaoS.Services
             clients.Remove(socket);
         }
 
-        public Task<bool> SendMessageToClients(Message message)
+        public Task<bool> SendMessageToClients(SlackMessage message)
         {
             List<WebSocket> toRemove = new List<WebSocket>();
             foreach (var client in this.clients)

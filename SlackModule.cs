@@ -29,21 +29,30 @@ namespace LaoS
             Get("/test", x => View["index", Guid.NewGuid()]);
             Post("/eventhandler", args =>
             {
-                string raw = RequestStream.FromStream(Request.Body).AsString();
-                var validation = this.Bind<VerificationRequest>();
-                if (validation.Type == "url_verification")
+                try
                 {
-                    return HandleValidation(validation);
+                    string raw = RequestStream.FromStream(Request.Body).AsString();
+                    var validation = this.Bind<VerificationRequest>();
+                    if (validation.Type == "url_verification")
+                    {
+                        return HandleValidation(validation);
+                    }
+                    else
+                    {
+                        var message = this.Bind<EventCallback<SlackMessage>>();
+                        return HandleMessage(message);
+                    }
                 }
-                else
-                {                    
-                    var message = this.Bind<EventCallback<Message>>();                  
-                    return HandleMessage(message);
-                } 
+                catch (Exception exc)
+                {
+                    Console.WriteLine(exc.Message);
+                    Console.WriteLine(exc.StackTrace);
+                    return "OK";
+                }
             });
         }
 
-        private async Task<string> HandleMessage(EventCallback<Message> eventCallback)
+        private async Task<string> HandleMessage(EventCallback<SlackMessage> eventCallback)
         {               
             var message = eventCallback.Event;
             var settings = await this.settingService.GetSettings(eventCallback.Token);
@@ -53,7 +62,19 @@ namespace LaoS
                 {
                     message.FullUser = await this.slackApi.GetUser(eventCallback.Token, message.User);
                 }
-                if (!message.Hidden)
+                if (message.Hidden && message.Subtype == "message_deleted")
+                {
+                    this.messageStore.DeleteMessage(message);
+                }
+                else if (message.Hidden && message.Subtype == "message_changed")
+                { 
+                    if (!String.IsNullOrEmpty(message.Message.Edited.User))
+                    {
+                        message.Message.Edited.FullUser = await this.slackApi.GetUser(eventCallback.Token, message.Message.Edited.User);
+                    }
+                    message = this.messageStore.UpdateMessage(message);
+                }
+                else
                 {
                     this.messageStore.StoreMessage(message);
                 }

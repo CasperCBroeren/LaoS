@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <head>
     <meta charset="utf-8" />
-    <title>Demo</title>
+    <title>Demo v3</title>
     <link rel="stylesheet" href="/main/wwwroot/wdt-emoji-bundle.css" />
     <script src="/main/wwwroot/emoji.min.js" type="text/javascript"></script>
     <script src="/main/wwwroot/moment.min.js" type="text/javascript"></script>
@@ -12,33 +12,40 @@
             font-size: 15px;
             line-height: 22px;
         }
-        .userIcon
-        {   
+
+        .userIcon {
             width: 32px;
             margin-right: 10px;
         }
+
         .on {
             font-size: 10px;
+        }
+        .edited {
+            margin-left: 10px;
+            color: #9e9ea6;
+            font-size: .8rem;            
         }
     </style>
 </head>
 <body>
-    <script> 
-        var wsUri = ((location.protocol === "https:") ? "wss://" : "ws://") + window.location.host + "/socket"; 
+    <script>
+
+        var wsUri = ((location.protocol === "https:") ? "wss://" : "ws://") + window.location.host + "/socket";
         var output, websocket;
         var emoji = new EmojiConvertor();
 
-        function init() { 
+        function init() {
             output = document.getElementById("output");
 
             emoji.img_sets = {
                 'apple': { 'sheet': '/main/wwwroot/sheets/sheet_apple_64_indexed_128.png', 'mask': 1 }
             };
-            emoji.img_set = 'apple'; 
-            emoji.use_sheet = true; 
+            emoji.img_set = 'apple';
+            emoji.use_sheet = true;
 
-            emoji.init_env(); 
-              
+            emoji.init_env();
+
             websocket = new WebSocket(wsUri);
             websocket.onopen = function (evt) { onOpen(evt); };
             websocket.onclose = function (evt) { onClose(evt); };
@@ -46,28 +53,38 @@
             websocket.onerror = function (evt) { onError(evt); };
             setInterval(function () {
                 var elms = document.querySelectorAll('span.on');
-                for (i = 0; i < elms.length; i++) { 
+                for (i = 0; i < elms.length; i++) {
                     elms[i].innerHTML = moment(elms[i].getAttribute('data-on')).fromNow();
                 }
-            }, 1000);
+            }, 30000);
         }
         function onOpen(evt) {
-            console.log("CONNECTED"); 
+            console.log("CONNECTED");
         }
         function onClose(evt) {
             console.log("DISCONNECTED");
         }
-        function onMessage(evt) {
-            var event = JSON.parse(evt.data);
-            var formated = emoji.replace_colons(event.message);
+        function onMessage(obj) {
+            var event = JSON.parse(obj.data);
+        
+            if (event.action === "delete") {
+                var item = document.getElementById(event.messageId)
+                if (item != null) item.remove();
+            }
+            else {
+                var formated = emoji.replace_colons(event.message);
                 formated = applyFormat(formated);
-            var date = moment(event.on).fromNow();
-            writeToScreen('<span class="message" id="' + event.messageId + '"><span class="sender"><img class="userIcon" src="' + event.senderIcon+'" />' + event.senderName + ': </span>' + formated + '</span><br><span class="on" data-on="'+event.on+'">' + date + '</span>');
+                var date = moment(event.on).fromNow();
+                if (event.edited)
+                {
+                    formated += '<span class="edited">(edited)</span>';
+                }
+                writeToOutput('<span class="message"><span class="sender"><img class="userIcon" src="' + event.senderIcon + '" />' + event.senderName + ': </span>' + formated + '</span><br><span class="on" data-on="' + event.on + '">' + date + '</span>', event.messageId);
+            }
             return true;
         }
 
-        function applyFormat(text)
-        {
+        function applyFormat(text) {
             return text.replace(/\b\*(\.*?)\*\b/g, '<b>$1</b>')
                 .replace(/\b\_(\.*?)\_\b/g, '<i>$1</i>')
                 .replace(/\b\~(\.*?)\~\b/g, '<del>$1</del>')
@@ -79,15 +96,22 @@
         function onError(evt) {
             console.log(evt.data);
         }
-       
-        function writeToScreen(message) {
-            var pre = document.createElement("p") 
-            pre.innerHTML = message;
-            output.insertAdjacentElement('afterbegin', pre);
+
+        function writeToOutput(message, messageId) {
+            var existingElm = document.getElementById(messageId);
+            if (existingElm != null) {
+                existingElm.innerHTML = message;
+            }
+            else {                
+                var pre = document.createElement("p")
+                pre.id = messageId;
+                pre.innerHTML = message;
+                output.insertAdjacentElement('afterbegin', pre);
+            }
         }
         window.addEventListener("load", init, false);
     </script>
-    <h2>Output</h2> 
+    <h2>Output</h2>
     <div id="output"></div>
 
 </body>
