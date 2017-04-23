@@ -5,6 +5,7 @@
     <link rel="stylesheet" href="/main/wwwroot/wdt-emoji-bundle.css" />
     <script src="/main/wwwroot/emoji.min.js" type="text/javascript"></script>
     <script src="/main/wwwroot/moment.min.js" type="text/javascript"></script>
+    <script src="/main/wwwroot/reconnecting-websockets.min.js" type="text/javascript"></script>
     <style>
         * {
             font-family: Slack-Lato,appleLogo,sans-serif;
@@ -46,11 +47,12 @@
 
             emoji.init_env();
 
-            websocket = new WebSocket(wsUri);
+            websocket = new ReconnectingWebSocket(wsUri);
             websocket.onopen = function (evt) { onOpen(evt); };
             websocket.onclose = function (evt) { onClose(evt); };
             websocket.onmessage = function (evt) { onMessage(evt); };
             websocket.onerror = function (evt) { onError(evt); };
+
             setInterval(function () {
                 var elms = document.querySelectorAll('span.on');
                 for (i = 0; i < elms.length; i++) {

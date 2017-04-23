@@ -10,14 +10,13 @@
     <None Remove="views\Slack\index.html" />
     <None Remove="wwwroot\emoji.min.js" />
     <None Remove="wwwroot\moment.min.js" />
+    <None Remove="wwwroot\reconnecting-websockets.min.js" />
     <None Remove="wwwroot\sheets\sheet_apple_64_indexed_128.png" />
     <None Remove="wwwroot\sheets\sheet_emojione_64_indexed_128.png" />
     <None Remove="wwwroot\sheets\sheet_facebook_64_indexed_128.png" />
     <None Remove="wwwroot\sheets\sheet_google_64_indexed_128.png" />
     <None Remove="wwwroot\sheets\sheet_messenger_64_indexed_128.png" />
     <None Remove="wwwroot\sheets\sheet_twitter_64_indexed_128.png" />
-    <None Remove="wwwroot\wdt-emoji-bundle.css" />
-    <None Remove="wwwroot\wdt-emoji-bundle.min.js" />
   </ItemGroup>
 
   <ItemGroup>
@@ -31,6 +30,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="wwwroot\moment.min.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\reconnecting-websockets.min.js">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="wwwroot\sheets\sheet_apple_64_indexed_128.png">
@@ -49,12 +51,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="wwwroot\sheets\sheet_twitter_64_indexed_128.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="wwwroot\wdt-emoji-bundle.css">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="wwwroot\wdt-emoji-bundle.min.js">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

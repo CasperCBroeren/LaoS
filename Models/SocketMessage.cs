@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace LaoS.Models
 {
@@ -29,11 +30,17 @@ namespace LaoS.Models
                 this.Action = "message";
                 this.MessageId = message.Ts.ToString();
                 this.Edited = (message.Subtype == "message_changed");
-                this.Message = message.Text;
+                this.Message = FixJoinMessage(message.Text, message.User);
             }
             
             this.On = UnixTimeStampToDateTime(message.Event_Ts);
 
+        }
+         
+        private string FixJoinMessage(string text, string user)
+        {
+            var joinFixer = new Regex("<\\@"+user+"(.*?)>", RegexOptions.Compiled);
+            return joinFixer.Replace(text, string.Empty);
         }
 
         [JsonProperty("senderName")]
