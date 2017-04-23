@@ -39,3 +39,9 @@ If you want send me tips on how to improve this
 5. propper styling and JS code (frontend optimalisation)
 6. Simple Interaction mode
 7. Account system for adding new channels :D
+
+### Thanks to
+ - dotNetCore 
+ - Moment.js
+ - iamcal for js emoji
+ - joewalnes for reconnecting-websocket
