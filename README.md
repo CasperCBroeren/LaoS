@@ -16,11 +16,12 @@ Storage is done with Azure storage, see the *using the code* section for instruc
 ### Using the code
 Feel free to fork or critique my work, it's just a hobby project :D
 When using please add this appsettings.json your self with your own key and account;
-
+```
 {
   "storageKey": "y",
   "storageAccount": "x"
 }
+```
 
 ### Deployment to [Zeit](https://zeit.co/)
 On windows machines please use the release.ps1, on linux.. please enter the commands your self
