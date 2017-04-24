@@ -27,7 +27,7 @@ namespace LaoS
  
             Get("/", args => "Hello from LaoS; Look at our Slack");
             Get("/test", x => View["index", Guid.NewGuid()]);
-            Post("/eventhandler", args =>
+            Post("/eventhandler", async (args) =>  
             {
                 try
                 {
@@ -35,12 +35,12 @@ namespace LaoS
                     var validation = this.Bind<VerificationRequest>();
                     if (validation.Type == "url_verification")
                     {
-                        return HandleValidation(validation);
+                        return await HandleValidation(validation);
                     }
                     else
                     {
                         var message = this.Bind<EventCallback<SlackMessage>>();
-                        return HandleMessage(message);
+                        return await HandleMessage(message);
                     }
                 }
                 catch (Exception exc)
