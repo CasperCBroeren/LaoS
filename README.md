@@ -7,6 +7,7 @@ Features
 * Delete and edit events from slack are honoured 
 * De-duplication of messages
 * In memory persistance 
+* Handeling of links
 
 ### Developed 
 Developed on dotNetCore 1.1 with [Nancy FX ](http://nancyfx.org/) 
@@ -35,11 +36,10 @@ If you want send me tips on how to improve this
 0. Percistance of messages to Azure storage
 1. Handeling of images 
 2. Handeling of reactions on a message 
-3. Handeling of links
-4. Handeling of other attachements
-5. propper styling and JS code (frontend optimalisation)
-6. Simple Interaction mode
-7. Account system for adding new channels :D
+3. Handeling of other attachements
+4. propper styling and JS code (frontend optimalisation)
+5. Simple Interaction mode
+6. Account system for adding new channels :D
 
 ### Thanks to
  - [dotNetCore](https://www.microsoft.com/net)
