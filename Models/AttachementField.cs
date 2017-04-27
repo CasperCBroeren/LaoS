@@ -1,6 +1,6 @@
 ﻿namespace LaoS.Models
 {
-    public class AttachementField
+    public class AttachmentField
     {
         public string Title { get; set; }
         public string Value { get; set; }

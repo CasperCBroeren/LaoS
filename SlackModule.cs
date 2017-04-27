@@ -56,6 +56,7 @@ namespace LaoS
         {               
             var message = eventCallback.Event;
             var settings = await this.settingService.GetSettings(eventCallback.Token);
+
             if (settings.Channel == message.Channel)
             {
                 if (!String.IsNullOrEmpty(message.User))
@@ -68,7 +69,7 @@ namespace LaoS
                 }
                 else if (message.Hidden && message.Subtype == "message_changed")
                 { 
-                    if (!String.IsNullOrEmpty(message.Message.Edited.User))
+                    if (message.Message.Edited != null && !String.IsNullOrEmpty(message.Message.Edited.User))
                     {
                         message.Message.Edited.FullUser = await this.slackApi.GetUser(eventCallback.Token, message.Message.Edited.User);
                     }
@@ -79,7 +80,7 @@ namespace LaoS
                     this.messageStore.StoreMessage(message);
                 }
                 await this.clientManager.SendMessageToClients(message);
-                Console.WriteLine($"{message.FullUser.Name}: {message.Text} ");
+                Console.WriteLine($"{message.FullUser?.Name}: {message.Text} ");
             }
             return "OK";
         }

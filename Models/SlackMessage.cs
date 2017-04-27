@@ -32,8 +32,10 @@ namespace LaoS.Models
         
         public EditMessage Message { get; set; }
 
-        public List<Attachement> Attachements { get; set; }
+        public List<Attachment> Attachments { get; set; }
 
         public List<Link> Links { get; set; }
+
+        public SlackMessage Previous_Message { get;  set; }
     }
 }

@@ -40,12 +40,19 @@ namespace LaoS.Services
 
         public SlackMessage UpdateMessage(SlackMessage message)
         {
-            if (this.store.ContainsKey(message.Message.Ts.ToString()))
+            var tsOfPrev = message.Previous_Message != null ? message.Previous_Message.Ts : message.Message.Ts;
+            if (this.store.ContainsKey(tsOfPrev.ToString()))
             {
-                var update = this.store[message.Message.Ts.ToString()];
+                var update = this.store[tsOfPrev.ToString()];
                 update.Text = message.Message.Text;
                 update.Subtype = message.Subtype;
+                update.Attachments = message.Message.Attachments;
+                update.Previous_Message = message.Previous_Message;
                 return update;
+            }
+            else
+            {
+                this.StoreMessage(message);
             }
             return message;
         }

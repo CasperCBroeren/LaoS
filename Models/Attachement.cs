@@ -2,10 +2,8 @@ using System.Collections.Generic;
 
 namespace LaoS.Models
 {
-    public class Attachement
+    public class Attachment
     {
-        
-
 
         public string Fallback { get; set; }
 
@@ -25,7 +23,7 @@ namespace LaoS.Models
 
         public string Text { get; set; }
 
-        public List<AttachementField> Fields { get; set; }
+        public List<AttachmentField> Fields { get; set; }
 
         public string Image_Url { get; set; }
          
@@ -35,6 +33,12 @@ namespace LaoS.Models
 
         public string Footer_Icon { get; set; }
 
+        public string Service_Icon { get; set; }
+
+        public string Service_Name { get;   set; }
+
         public double Ts { get; set; }
+        
+
     }
 }

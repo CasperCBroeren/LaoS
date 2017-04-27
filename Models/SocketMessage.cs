@@ -29,18 +29,40 @@ namespace LaoS.Models
 
                 this.Action = "message";
                 this.MessageId = message.Ts.ToString();
-                this.Edited = (message.Subtype == "message_changed");
-                this.Message = FixJoinMessage(message.Text, message.User);
+                this.Edited = (message.Subtype == "message_changed" && (message.Previous_Message == null || message.Previous_Message.Text != message.Text));
+                this.Message = CreateNiceAttachment(message,
+                                    FixJoinMessage(message.Text, message.User));
             }
             
             this.On = UnixTimeStampToDateTime(message.Event_Ts);
 
         }
-         
+
+        private string CreateNiceAttachment(SlackMessage message, string text)
+        {
+            if (message.Attachments != null)
+            {
+                foreach (var attachment in message.Attachments)
+                {
+                    string imgPart = string.Empty;
+                    if (!string.IsNullOrEmpty(attachment.Image_Url))
+                    {
+                        imgPart = $@"<br/><img class=""thumb_img"" src=""{attachment.Image_Url}"" />";
+                    }
+                    text = text.Replace($"<{attachment.Title_Link}>", $@"<img src=""{attachment.Service_Icon}"">{attachment.Service_Name}<br/><a href=""{attachment.Title_Link}"">{attachment.Fallback}</a><br/>{attachment.Text}{imgPart}");
+                }
+            }
+            return text;
+        }
+
         private string FixJoinMessage(string text, string user)
         {
-            var joinFixer = new Regex("<\\@"+user+"(.*?)>", RegexOptions.Compiled);
-            return joinFixer.Replace(text, string.Empty);
+            if (text != null)
+            {
+                var joinFixer = new Regex("<\\@" + user + "(.*?)>", RegexOptions.IgnoreCase);
+                return joinFixer.Replace(text, string.Empty);
+            }
+            return text;
         }
 
         [JsonProperty("senderName")]
