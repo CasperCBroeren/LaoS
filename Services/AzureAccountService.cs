@@ -11,12 +11,10 @@ namespace LaoS.Services
     public class AzureAccountService : IAccountService
     {
         private string _storageKey;
-        private string _storageAccount;
-        private IAppSettings appSettings;
+        private string _storageAccount; 
 
         public AzureAccountService(IAppSettings appSettings)
-        {
-            this.appSettings = appSettings;
+        { 
             this._storageAccount = appSettings.Get("storageAccount");
             this._storageKey = appSettings.Get("storageKey");
         }
@@ -52,7 +50,7 @@ namespace LaoS.Services
                 else
                     return null;
             }
-            catch (Exception exc)
+            catch (Exception)
             {
                 return null;
             }

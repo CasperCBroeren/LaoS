@@ -12,7 +12,7 @@ namespace LaoS
         public static TinyIoCContainer Container;
         protected override void ApplicationStartup(TinyIoCContainer container, IPipelines pipelines)
         {
-            container.Register<IChannelMessageStore, MemoryChannelMessageStore>().AsSingleton();
+            container.Register<IChannelMessageStore, AzureStorageChannelMessageStore>().AsSingleton();
             container.Register<ISocketClientManager, SocketClientManager>().AsSingleton();
             container.Register<ISlackApi, SlackApi>().AsSingleton();
             container.Register<IAccountService, AzureAccountService>().AsSingleton();

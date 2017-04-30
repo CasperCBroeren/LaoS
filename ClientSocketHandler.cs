@@ -31,7 +31,7 @@ namespace LaoS
             {   
                 var webSocket = await context.WebSockets.AcceptWebSocketAsync();
                 
-                clientManager.AddClient(webSocket);
+                await clientManager.AddClient(webSocket);
                 while (webSocket.State == WebSocketState.Open)
                 {
                     var buffer = new byte[1024 * 4];
@@ -41,11 +41,11 @@ namespace LaoS
                     if (result.MessageType == WebSocketMessageType.Close)
                     {
                         await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closed in server by the client", CancellationToken.None);
-                        clientManager.RemoveClient(webSocket);
+                        await clientManager.RemoveClient(webSocket);
                     }
                     else
                     {
-                        clientManager.ReceivedMessageFromClient(webSocket, result, Encoding.UTF8.GetString(buffer, 0, result.Count));
+                        await clientManager.ReceivedMessageFromClient(webSocket, result, Encoding.UTF8.GetString(buffer, 0, result.Count));
                     }
                 }
             }

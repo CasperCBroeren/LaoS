@@ -1,13 +1,14 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.WindowsAzure.Storage.Table;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace LaoS.Models
 {
-    public class SocketMessage
+    public class SocketMessage 
     {
-
+  
         DateTime UnixTimeStampToDateTime(double unixTimeStamp)
         {
             // Unix timestamp is seconds past epoch
@@ -22,13 +23,13 @@ namespace LaoS.Models
             if (message.Hidden && message.Subtype == "message_deleted")
             {
                 this.Action = "delete";
-                this.MessageId = message.Deleted_Ts.ToString();
+                this.MessageId = message.Deleted_Ts.ToString(SlackMessage.DecimalFormat);
             } 
             else
             {
 
                 this.Action = "message";
-                this.MessageId = message.Ts.ToString();
+                this.MessageId = message.Ts.ToString(SlackMessage.DecimalFormat);
                 this.Edited = (message.Subtype == "message_changed" && (message.Previous_Message == null || message.Previous_Message.Text != message.Text));
                 this.Message = CreateNiceAttachment(message,
                                     FixJoinMessage(message.Text, message.User));
@@ -42,6 +43,7 @@ namespace LaoS.Models
         {
             if (message.Attachments != null)
             {
+                string addendum = string.Empty;
                 foreach (var attachment in message.Attachments)
                 {
                     string imgPart = string.Empty;
@@ -49,8 +51,10 @@ namespace LaoS.Models
                     {
                         imgPart = $@"<br/><img class=""thumb_img"" src=""{attachment.Image_Url}"" />";
                     }
-                    text = text.Replace($"<{attachment.Title_Link}>", $@"<img src=""{attachment.Service_Icon}"">{attachment.Service_Name}<br/><a href=""{attachment.Title_Link}"">{attachment.Fallback}</a><br/>{attachment.Text}{imgPart}");
+                    text = text.Replace($"<{attachment.Title_Link}>", $@"<a href=""{attachment.Title_Link}"">{attachment.Title_Link}</a>");
+                    addendum += $@"<div class=""linkbox""><img class=""serviceIcon"" src=""{attachment.Service_Icon}"">{attachment.Service_Name}<br/><a href=""{attachment.Title_Link}"">{attachment.Fallback}</a><br/>{attachment.Text}{imgPart}</div>";
                 }
+                text = string.Concat(text, addendum);
             }
             return text;
         }

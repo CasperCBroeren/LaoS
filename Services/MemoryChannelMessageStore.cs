@@ -3,6 +3,7 @@ using LaoS.Models;
 using LaoS.Interfaces;
 using System.Linq;
 using System;
+using System.Threading.Tasks;
 
 namespace LaoS.Services
 {
@@ -10,51 +11,55 @@ namespace LaoS.Services
     {
         private Dictionary<string, SlackMessage> store { get; set; } = new Dictionary<string, SlackMessage>();
 
-        public void DeleteMessage(SlackMessage message)
+        public Task DeleteMessage(SlackMessage message)
         {
-            if (this.store.ContainsKey(message.Deleted_Ts.ToString()))
+            if (this.store.ContainsKey(message.Deleted_Ts.ToString(SlackMessage.DecimalFormat)))
             {
-                this.store.Remove(message.Deleted_Ts.ToString());
+                this.store.Remove(message.Deleted_Ts.ToString(SlackMessage.DecimalFormat));
             }
+            return Task.CompletedTask;
         }
 
-        public IReadOnlyList<SlackMessage> GetAllPast(int amount)
+        public Task<IReadOnlyList<SlackMessage>> GetAllPast(string channel, int amount)
         {
+            IReadOnlyList<SlackMessage> result = null;
             if (this.store.Count > amount)
             {
-                return this.store.Values.ToList().GetRange(0, amount);
+                result = this.store.Values.ToList().GetRange(0, amount);
             }
             else
             {
-                return this.store.Values.ToList().OrderBy(x=>x.Event_Ts).ToList();
+                result = this.store.Values.ToList().OrderBy(x=>x.Event_Ts).ToList();
             }
+            return Task.FromResult(result);
         }
-        public bool StoreMessage(SlackMessage message)
+        public Task<bool> StoreMessage(SlackMessage message)
         {
-            if (!this.store.ContainsKey(message.Event_Ts.ToString()))
+            if (!this.store.ContainsKey(message.Event_Ts.ToString(SlackMessage.DecimalFormat)))
             {
-                this.store.Add(message.Event_Ts.ToString(), message);
+                this.store.Add(message.Event_Ts.ToString(SlackMessage.DecimalFormat), message);
             }
-            return true;
+            return Task.FromResult(true);
         }
 
-        public SlackMessage UpdateMessage(SlackMessage message)
+        public Task<SlackMessage> UpdateMessage(SlackMessage message)
         {
+            SlackMessage result = message;
             var tsOfPrev = message.Previous_Message != null ? message.Previous_Message.Ts : message.Message.Ts;
-            if (this.store.ContainsKey(tsOfPrev.ToString()))
+            if (this.store.ContainsKey(tsOfPrev.ToString(SlackMessage.DecimalFormat)))
             {
-                var update = this.store[tsOfPrev.ToString()];
-                update.Text = message.Message.Text;
-                update.Subtype = message.Subtype;
-                update.Attachments = message.Message.Attachments;
-                update.Previous_Message = message.Previous_Message;
-                return update;
+                var original = this.store[tsOfPrev.ToString(SlackMessage.DecimalFormat)];
+                original.Text = message.Message.Text;
+                original.Subtype = message.Subtype;
+                original.Attachments = message.Message.Attachments;
+                original.Previous_Message = message.Previous_Message;
+                result = original;
             }
             else
             {
                 this.StoreMessage(message);
             }
-            return message;
+            return Task.FromResult(message);
         }
     }
 }

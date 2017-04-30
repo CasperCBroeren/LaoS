@@ -1,16 +1,34 @@
+using Microsoft.WindowsAzure.Storage.Table;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace LaoS.Models
 {
-    public class SlackMessage
+    public class SlackMessage : TableEntity
     {
+        public static readonly CultureInfo DecimalFormat = new CultureInfo("en-US");
+        public SlackMessage()
+        {
+
+        }
+        
         public string Type { get; set; }
 
         public string Subtype { get; set; }
 
         public bool Hidden { get; set; }
-                
-        public string Channel { get; set; }
+
+        private string channel;
+        public string Channel { get
+            {
+                return channel;
+            }
+            set
+            {
+                channel = value;
+                this.PartitionKey = value;
+            }
+        }
 
         public string User { get; set; }
 
@@ -28,7 +46,17 @@ namespace LaoS.Models
         
         public double Deleted_Ts { get; set; }
 
-        public double Event_Ts { get; set; }
+        private double event_Ts;
+        public double Event_Ts { get
+            {
+                return event_Ts;
+            }
+            set
+            {
+                event_Ts = value;
+                RowKey = value.ToString(DecimalFormat);
+            }
+        }
         
         public EditMessage Message { get; set; }
 

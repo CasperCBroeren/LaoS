@@ -1,14 +1,15 @@
 using System.Collections.Generic;
 using LaoS.Models;
+using System.Threading.Tasks;
 
 namespace LaoS.Interfaces
 {
     public interface IChannelMessageStore
     {
-        IReadOnlyList<SlackMessage> GetAllPast(int amount);
+        Task<IReadOnlyList<SlackMessage>> GetAllPast(string channel, int amount);
 
-        bool StoreMessage(SlackMessage message);
-        void DeleteMessage(SlackMessage message);
-        SlackMessage UpdateMessage(SlackMessage message);
+        Task<bool> StoreMessage(SlackMessage message);
+        Task DeleteMessage(SlackMessage message);
+        Task<SlackMessage> UpdateMessage(SlackMessage message);
     }
 }

@@ -65,7 +65,7 @@ namespace LaoS
                 }
                 if (message.Hidden && message.Subtype == "message_deleted")
                 {
-                    this.messageStore.DeleteMessage(message);
+                    await this.messageStore.DeleteMessage(message);
                 }
                 else if (message.Hidden && message.Subtype == "message_changed")
                 { 
@@ -73,11 +73,11 @@ namespace LaoS
                     {
                         message.Message.Edited.FullUser = await this.slackApi.GetUser(eventCallback.Token, message.Message.Edited.User);
                     }
-                    message = this.messageStore.UpdateMessage(message);
+                    message = await this.messageStore.UpdateMessage(message);
                 }
                 else
                 {
-                    this.messageStore.StoreMessage(message);
+                    await this.messageStore.StoreMessage(message);
                 }
                 await this.clientManager.SendMessageToClients(message);
                 Console.WriteLine($"{message.FullUser?.Name}: {message.Text} ");

@@ -22,7 +22,9 @@ namespace LaoS.Services
         public async Task AddClient(WebSocket socket)
         {
             clients.Add(socket);
-            foreach (var message in this.messageStore.GetAllPast(10))
+            // TODO: Fix channel fuck up
+            var pastMessages = await this.messageStore.GetAllPast("C52HEVBK2", 10);
+            foreach (var message in pastMessages)
             {
                 await Send(socket, new SocketMessage(message), CancellationToken.None);
             }

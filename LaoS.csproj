@@ -17,6 +17,7 @@
     <None Remove="wwwroot\sheets\sheet_google_64_indexed_128.png" />
     <None Remove="wwwroot\sheets\sheet_messenger_64_indexed_128.png" />
     <None Remove="wwwroot\sheets\sheet_twitter_64_indexed_128.png" />
+    <None Remove="wwwroot\wdt-emoji-bundle.css" />
   </ItemGroup>
 
   <ItemGroup>
@@ -51,6 +52,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="wwwroot\sheets\sheet_twitter_64_indexed_128.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="wwwroot\wdt-emoji-bundle.css">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
