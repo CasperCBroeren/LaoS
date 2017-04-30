@@ -113,20 +113,24 @@
                 p.id = messageId;
                 p.innerHTML = message;
                 if (output.childElementCount === 0) {
-                    output.insertAdjacentElement('afterbegin', p);
+                    output.appendChild(p);
                 }
                 else 
-                { 
+                {
+                    var toInsertTs = parseFloat(messageId);
                     for (var index = 0; index < output.childElementCount; index++)
                     {
                         var item = output.childNodes[index];
-                        if (parseFloat(item.id, 10) > parseFloat(p.id, 10) || 
-                            output.childElementCount-1 === index)
+                        console.log(item);
+                        var currentItemTs = parseFloat(item.id, 10);
+                        console.log("Check " + toInsertTs + ">" + currentItemTs + ";");
+                        if (toInsertTs > currentItemTs  )
                         {
                             output.insertBefore(p, item);
                             return;
                         }
                     }
+                    output.appendChild(p);
                 }
             }
         }
