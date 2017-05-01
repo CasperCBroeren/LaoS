@@ -12,18 +12,20 @@ namespace LaoS.Services
 {
     public class SocketClientManager : ISocketClientManager
     {
-        public SocketClientManager(IChannelMessageStore messageStore)
+        public SocketClientManager(IChannelMessageStore messageStore, IAccountService accountService)
         {
             this.messageStore = messageStore;
+            this.accountService = accountService;
         }
         private readonly List<WebSocket> clients = new List<WebSocket>();
-        private IChannelMessageStore messageStore;
+        private readonly IChannelMessageStore messageStore;
+        private readonly IAccountService accountService;
 
-        public async Task AddClient(WebSocket socket)
+        public async Task AddClient(string accountToken, WebSocket socket)
         {
-            clients.Add(socket);
-            // TODO: Fix channel fuck up
-            var pastMessages = await this.messageStore.GetAllPast("C52HEVBK2", 10);
+            var account = await accountService.GetSettings(accountToken);
+            clients.Add(socket); 
+            var pastMessages = await this.messageStore.GetAllPast(account.Channel, 10);
             foreach (var message in pastMessages)
             {
                 await Send(socket, new SocketMessage(message), CancellationToken.None);

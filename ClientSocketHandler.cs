@@ -8,18 +8,18 @@ using System.Text;
 
 namespace LaoS
 {
-    public class ClientSocketHandler
+    public class ClientSocketMiddleware
     {
 
         private readonly RequestDelegate _next;
         private ISocketClientManager clientManager;
 
-        public ClientSocketHandler()
+        public ClientSocketMiddleware()
         {
 
         }
 
-        public ClientSocketHandler(RequestDelegate next, ISocketClientManager clientManager)
+        public ClientSocketMiddleware(RequestDelegate next, ISocketClientManager clientManager)
         {
             _next = next;
             this.clientManager = clientManager;
@@ -28,24 +28,30 @@ namespace LaoS
         {
 
             if (context.WebSockets.IsWebSocketRequest)
-            {   
-                var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                
-                await clientManager.AddClient(webSocket);
-                while (webSocket.State == WebSocketState.Open)
-                {
-                    var buffer = new byte[1024 * 4];
-                    var result = await webSocket.ReceiveAsync(buffer: new ArraySegment<byte>(buffer),
-                                                              cancellationToken: CancellationToken.None);
+            {
 
-                    if (result.MessageType == WebSocketMessageType.Close)
+                var path = context.Request.Path.HasValue ? context.Request.Path.Value : string.Empty;
+                var parts = path.Split('/');
+                if (parts.Length == 2)
+                {
+                    var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+
+                    await clientManager.AddClient(parts[1], webSocket);
+                    while (webSocket.State == WebSocketState.Open)
                     {
-                        await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closed in server by the client", CancellationToken.None);
-                        await clientManager.RemoveClient(webSocket);
-                    }
-                    else
-                    {
-                        await clientManager.ReceivedMessageFromClient(webSocket, result, Encoding.UTF8.GetString(buffer, 0, result.Count));
+                        var buffer = new byte[1024 * 4];
+                        var result = await webSocket.ReceiveAsync(buffer: new ArraySegment<byte>(buffer),
+                                                                  cancellationToken: CancellationToken.None);
+
+                        if (result.MessageType == WebSocketMessageType.Close)
+                        {
+                            await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closed in server by the client", CancellationToken.None);
+                            await clientManager.RemoveClient(webSocket);
+                        }
+                        else
+                        {
+                            await clientManager.ReceivedMessageFromClient(webSocket, result, Encoding.UTF8.GetString(buffer, 0, result.Count));
+                        }
                     }
                 }
             }

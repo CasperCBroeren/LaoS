@@ -11,10 +11,10 @@ namespace LaoS.Services
     public class AzureAccountService : IAccountService
     {
         private string _storageKey;
-        private string _storageAccount; 
+        private string _storageAccount;
 
         public AzureAccountService(IAppSettings appSettings)
-        { 
+        {
             this._storageAccount = appSettings.Get("storageAccount");
             this._storageKey = appSettings.Get("storageKey");
         }

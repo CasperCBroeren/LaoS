@@ -18,15 +18,33 @@ namespace LaoS
         public SlackModule(IChannelMessageStore messageStore,
                           ISocketClientManager clientManager,
                           ISlackApi slackApi,
-                          IAccountService settingService)
+                          IAccountService accountService)
         {
             this.messageStore = messageStore;
             this.clientManager = clientManager;
             this.slackApi = slackApi;
-            this.settingService = settingService; 
+            this.settingService = accountService; 
  
             Get("/", args => "Hello from LaoS; Look at our Slack");
             Get("/test", x => View["index", Guid.NewGuid()]);
+            Get("/register", x => View["register"]);
+            Post("/register",  async (args) =>
+            {
+                var registerAttempt = this.Bind<NewChannel>();
+                if (!string.IsNullOrEmpty(registerAttempt.SlackToken) &&
+                !string.IsNullOrEmpty(registerAttempt.ChannelCode) &&
+                !string.IsNullOrEmpty(registerAttempt.Name))
+                {
+                    var token = Guid.NewGuid().ToString();
+                    var account = new Account(token, registerAttempt.Name, registerAttempt.SlackToken, registerAttempt.ChannelCode);
+                    await accountService.SaveContractToTableStorage(account);
+                    return View["registerOk", token];
+                }
+                else
+                {
+                    return View["register", new { Message = "Please fill in all the fields" }];
+                }
+            });
             Post("/eventhandler", async (args) =>  
             {
                 try

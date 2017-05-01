@@ -9,12 +9,13 @@ namespace LaoS.Models
 
         }
 
-        public Account(string laosID, string name, string slackToken)  
+        public Account(string laosID, string name, string slackToken, string channel)  
         {
             PartitionKey = "DEV";
             RowKey = laosID;
             Name = name;
             SlackToken = slackToken;
+            Channel = channel;
         }
 
         public string LaosID { get { return RowKey; } set { RowKey = value; } }

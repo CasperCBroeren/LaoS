@@ -12,7 +12,7 @@ namespace LaoS
             app.Map("/main", branch => branch.UseOwin(x => x.UseNancy()));
 
             app.Map("/socket", branch =>
-            branch.UseMiddleware<ClientSocketHandler>(CustomBootstrapper.Container.Resolve<ISocketClientManager>())
+            branch.UseMiddleware<ClientSocketMiddleware>(CustomBootstrapper.Container.Resolve<ISocketClientManager>())
             .UseWebSockets()
             );
         }

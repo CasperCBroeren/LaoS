@@ -1,0 +1,21 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Register slack channel</title>
+
+</head>
+<body>
+    <p>
+        Your socket is
+        <pre id="url">
+
+        </pre>
+    </p>
+    <script type="text/javascript">
+        var wsUri = ((location.protocol === "https:") ? "wss://" : "ws://") + window.location.host + "/socket/@Model";
+        document.getElementById("url").innerHTML = wsUri
+    </script>
+   
+</body>
+</html>
