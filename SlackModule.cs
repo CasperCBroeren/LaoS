@@ -1,7 +1,7 @@
 ﻿using System;
 using LaoS.Models;
 using Nancy.ModelBinding;
-using System.Threading.Tasks; 
+using System.Threading.Tasks;
 using LaoS.Interfaces;
 using Nancy.Extensions;
 using Nancy.IO;
@@ -13,7 +13,7 @@ namespace LaoS
         private ISocketClientManager clientManager;
         private IChannelMessageStore messageStore;
         private ISlackApi slackApi;
-        private IAccountService settingService;
+        private IAccountService accountService;
 
         public SlackModule(IChannelMessageStore messageStore,
                           ISocketClientManager clientManager,
@@ -23,29 +23,48 @@ namespace LaoS
             this.messageStore = messageStore;
             this.clientManager = clientManager;
             this.slackApi = slackApi;
-            this.settingService = accountService; 
- 
-            Get("/", args => "Hello from LaoS; Look at our Slack");
-            Get("/test", x => View["index", Guid.NewGuid()]);
-            Get("/register", x => View["register"]);
-            Post("/register",  async (args) =>
+            this.accountService = accountService;
+             
+            Get("/", x => View["register"]);
+            Get("/authorize", async (args) =>
             {
-                var registerAttempt = this.Bind<NewChannel>();
-                if (!string.IsNullOrEmpty(registerAttempt.SlackToken) &&
-                !string.IsNullOrEmpty(registerAttempt.ChannelCode) &&
-                !string.IsNullOrEmpty(registerAttempt.Name))
+                if (!String.IsNullOrEmpty(Request.Query["code"]))
                 {
-                    var token = Guid.NewGuid().ToString();
-                    var account = new Account(token, registerAttempt.Name, registerAttempt.SlackToken, registerAttempt.ChannelCode);
-                    await accountService.SaveContractToTableStorage(account);
-                    return View["registerOk", token];
+                    var authAttempt = await slackApi.DoAuthentication(Request.Query["code"], Request.Query["state"], "http://localhost/main/authorize");
+                    if (authAttempt != null && !String.IsNullOrEmpty(authAttempt.Access_Token))
+                    {
+                        var account = new Account(authAttempt.Team_Id, authAttempt.Team_Name, authAttempt.Access_Token);
+                        await accountService.SaveAccountForTeam(account);
+                        var channels = await this.slackApi.GetChannelList(account.TeamId);
+                        return View["channelSelection", new StepTwoRegisterModel()
+                        {
+                            TeamId = account.TeamId,
+                            Channels = channels
+                        }];
+                    }
+                    else
+                    {
+                        return "Ohnoes, no data from slack";
+                    }
                 }
                 else
                 {
-                    return View["register", new { Message = "Please fill in all the fields" }];
+                    return "Ohnoes, no code from slack";
                 }
             });
-            Post("/eventhandler", async (args) =>  
+            Post("/registerOk", async args =>
+            {
+                var teamId = Request.Form["team_id"];
+                var settings = await accountService.GetAccountForTeam(teamId);
+                settings.ChannelId = Request.Form["channelSelection"];
+                await accountService.SaveAccountForTeam(settings);
+                return View["registerOK", teamId];
+            });
+            Get("/test", args =>
+            {
+                return View["index", Request.Query["for"]];
+            });
+            Post("/eventhandler", async (args) =>
             {
                 try
                 {
@@ -71,22 +90,21 @@ namespace LaoS
         }
 
         private async Task<string> HandleMessage(EventCallback<SlackMessage> eventCallback)
-        {               
+        {
+            var accountSettings = await this.accountService.GetAccountForTeam(eventCallback.Team_Id);
             var message = eventCallback.Event;
-            var settings = await this.settingService.GetSettings(eventCallback.Token);
-
-            if (settings.Channel == message.Channel)
+            if (message.Channel == accountSettings.ChannelId)
             {
                 if (!String.IsNullOrEmpty(message.User))
                 {
-                    message.FullUser = await this.slackApi.GetUser(eventCallback.Token, message.User);
+                    message.FullUser = await this.slackApi.GetUser(eventCallback.Team_Id, message.User);
                 }
                 if (message.Hidden && message.Subtype == "message_deleted")
                 {
                     await this.messageStore.DeleteMessage(message);
                 }
                 else if (message.Hidden && message.Subtype == "message_changed")
-                { 
+                {
                     if (message.Message.Edited != null && !String.IsNullOrEmpty(message.Message.Edited.User))
                     {
                         message.Message.Edited.FullUser = await this.slackApi.GetUser(eventCallback.Token, message.Message.Edited.User);
@@ -101,10 +119,11 @@ namespace LaoS
                 Console.WriteLine($"{message.FullUser?.Name}: {message.Text} ");
             }
             return "OK";
+
         }
 
         private Task<string> HandleValidation(VerificationRequest validation)
-        {               
+        {
             return Task.FromResult(validation.Challenge);
         }
     }

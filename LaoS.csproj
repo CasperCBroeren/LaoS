@@ -32,6 +32,9 @@
     <Content Include="views\Slack\register.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="views\Slack\channelSelection.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="views\Slack\registerOk.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

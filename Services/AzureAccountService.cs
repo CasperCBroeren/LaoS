@@ -19,7 +19,7 @@ namespace LaoS.Services
             this._storageKey = appSettings.Get("storageKey");
         }
 
-        public async Task<bool> SaveContractToTableStorage(Account settings)
+        public async Task<bool> SaveAccountForTeam(Account settings)
         {
             StorageCredentials credentials = new StorageCredentials(_storageAccount, _storageKey);
             CloudStorageAccount account = new CloudStorageAccount(credentials, true);
@@ -56,7 +56,7 @@ namespace LaoS.Services
             }
         }
 
-        public async Task<Account> GetSettings(string account)
+        public async Task<Account> GetAccountForTeam(string account)
         {
             return await GetContractFromTableStorage(account);
         }

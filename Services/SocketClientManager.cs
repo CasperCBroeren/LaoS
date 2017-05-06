@@ -23,9 +23,9 @@ namespace LaoS.Services
 
         public async Task AddClient(string accountToken, WebSocket socket)
         {
-            var account = await accountService.GetSettings(accountToken);
+            var account = await accountService.GetAccountForTeam(accountToken);
             clients.Add(socket); 
-            var pastMessages = await this.messageStore.GetAllPast(account.Channel, 10);
+            var pastMessages = await this.messageStore.GetAllPast(account.ChannelId, 10);
             foreach (var message in pastMessages)
             {
                 await Send(socket, new SocketMessage(message), CancellationToken.None);

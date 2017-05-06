@@ -1,0 +1,34 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Register slack channel</title>
+    <style>
+        * {
+            font-family: Slack-Lato,appleLogo,sans-serif;
+            color: #2C2D30;
+            font-size: 15px;
+            line-height: 22px;
+        }
+
+        .showIt {
+            clear: both;
+            padding: 2% 5%;
+            border: 1px solid grey;
+        }
+    </style>
+</head>
+<body>
+    <h1>Almost done</h1>
+    We realy would like to know which channel to monitor. If none selected, no channel will be monitored and no messages can be displayed.    
+    <form method="post" action="/main/registerOk">
+        <input type="hidden" name="team_id" value="@Model.TeamId" />
+        <select name="channelSelection">
+            @Each.Channels
+            <option value="@Current.Id">@Current.Name</option>
+            @EndEach
+        </select>
+        <input type="submit" value="Ok"/>
+    </form>
+</body>
+</html>

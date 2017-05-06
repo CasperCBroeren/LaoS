@@ -31,7 +31,7 @@ namespace LaoS.Models
                 this.Action = "message";
                 this.MessageId = message.Ts.ToString(SlackMessage.DecimalFormat);
                 this.Edited = (message.Subtype == "message_changed" && (message.Previous_Message == null || message.Previous_Message.Text != message.Text));
-                this.Message = CreateNiceAttachment(message,
+                this.Message = CreateNiceLinks(message,
                                     FixJoinMessage(message.Text, message.User));
             }
             
@@ -39,7 +39,7 @@ namespace LaoS.Models
 
         }
 
-        private string CreateNiceAttachment(SlackMessage message, string text)
+        private string CreateNiceLinks(SlackMessage message, string text)
         {
             if (message.Attachments != null)
             {

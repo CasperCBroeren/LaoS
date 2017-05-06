@@ -67,7 +67,7 @@ namespace LaoS.Services
             var entities = new List<AzureStorageRow<SlackMessage>>();
             do
             {
-                var query = new TableQuery<AzureStorageRow<SlackMessage>>();
+                var query = new TableQuery<AzureStorageRow<SlackMessage>>().Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, channel));
                 var queryResult = await table.ExecuteQuerySegmentedAsync(query, token);
                 entities.AddRange(queryResult.Results);
                 token = queryResult.ContinuationToken;

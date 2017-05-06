@@ -3,14 +3,30 @@
 <head>
     <meta charset="utf-8" />
     <title>Register slack channel</title>
+    <style>
+        * {
+            font-family: Slack-Lato,appleLogo,sans-serif;
+            color: #2C2D30;
+            font-size: 15px;
+            line-height: 22px;
+        }
 
+        .showIt {
+            clear: both;
+            padding: 2% 5%;
+            border: 1px solid grey;
+        }
+    </style>
 </head>
 <body>
+    <h1>Done!</h1>   
+
     <p>
         Your socket is
-        <pre id="url">
+        <pre id="url" class="showIt">
 
         </pre>
+        And if you like you can see a test <a href="/main/test?for=@Model">here</a>
     </p>
     <script type="text/javascript">
         var wsUri = ((location.protocol === "https:") ? "wss://" : "ws://") + window.location.host + "/socket/@Model";

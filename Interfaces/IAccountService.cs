@@ -5,7 +5,7 @@ namespace LaoS.Interfaces
 {
     public interface IAccountService
     {
-        Task<Account> GetSettings(string account);
-        Task<bool> SaveContractToTableStorage(Account settings);
+        Task<Account> GetAccountForTeam(string teamId);
+        Task<bool> SaveAccountForTeam(Account account);
     }
 }
