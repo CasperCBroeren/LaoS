@@ -60,9 +60,11 @@ namespace LaoS
                 await accountService.SaveAccountForTeam(settings);
                 return View["registerOK", teamId];
             });
-            Get("/test", args =>
+            Get("/test", async args =>
             {
-                return View["index", Request.Query["for"]];
+                var teamId = Request.Query["for"];
+                var settings = await accountService.GetAccountForTeam(teamId);
+                return View["test", settings];
             });
             Post("/eventhandler", async (args) =>
             {

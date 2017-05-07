@@ -7,7 +7,6 @@
 
   <ItemGroup>
     <None Remove="appsettings.json" />
-    <None Remove="views\Slack\index.html" />
     <None Remove="views\Slack\register.html" />
     <None Remove="views\Slack\registerOk.html" />
     <None Remove="wwwroot\emoji.min.js" />
@@ -26,7 +25,7 @@
     <Content Include="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="views\Slack\index.html">
+    <Content Include="views\Slack\test.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="views\Slack\register.html">

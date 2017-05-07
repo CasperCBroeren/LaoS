@@ -1,5 +1,4 @@
-﻿using Microsoft.WindowsAzure.Storage.Table;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
@@ -38,7 +37,7 @@ namespace LaoS.Models
             this.On = UnixTimeStampToDateTime(message.Event_Ts);
 
         }
-
+        private Regex plainLinkReplacer = new Regex(@"\<(.*?)\>", RegexOptions.Compiled);
         private string CreateNiceLinks(SlackMessage message, string text)
         {
             if (message.Attachments != null)
@@ -55,6 +54,10 @@ namespace LaoS.Models
                     addendum += $@"<div class=""linkbox""><img class=""serviceIcon"" src=""{attachment.Service_Icon}"">{attachment.Service_Name}<br/><a href=""{attachment.Title_Link}"">{attachment.Fallback}</a><br/>{attachment.Text}{imgPart}</div>";
                 }
                 text = string.Concat(text, addendum);
+            }
+            else
+            {
+                text = plainLinkReplacer.Replace(text, @"<a href=""$1"">$1</a>");
             }
             return text;
         }
