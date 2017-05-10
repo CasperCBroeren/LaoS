@@ -5,9 +5,9 @@ using System.Text.RegularExpressions;
 
 namespace LaoS.Models
 {
-    public class SocketMessage 
+    public class SocketMessage
     {
-  
+
         DateTime UnixTimeStampToDateTime(double unixTimeStamp)
         {
             // Unix timestamp is seconds past epoch
@@ -23,20 +23,36 @@ namespace LaoS.Models
             {
                 this.Action = "delete";
                 this.MessageId = message.Deleted_Ts.ToString(SlackMessage.DecimalFormat);
-            } 
+            }
             else
             {
 
                 this.Action = "message";
                 this.MessageId = message.Ts.ToString(SlackMessage.DecimalFormat);
                 this.Edited = (message.Subtype == "message_changed" && (message.Previous_Message == null || message.Previous_Message.Text != message.Text));
-                this.Message = CreateNiceLinks(message,
-                                    FixJoinMessage(message.Text, message.User));
+                this.Message = ProcessImages(message, CreateNiceLinks(message,
+                                    FixJoinMessage(message.Text, message.User)));
             }
-            
+
             this.On = UnixTimeStampToDateTime(message.Event_Ts);
 
         }
+
+        private string ProcessImages(SlackMessage message, string text)
+        {
+            if (message.Attachments != null)
+            {
+                foreach (var attachment in message.Attachments)
+                {
+                    if (!String.IsNullOrEmpty(attachment.Image_Url))
+                    {
+
+                    }
+                }
+            }
+            return text;
+        }
+
         private Regex plainLinkReplacer = new Regex(@"\<(.*?)\>", RegexOptions.Compiled);
         private string CreateNiceLinks(SlackMessage message, string text)
         {
