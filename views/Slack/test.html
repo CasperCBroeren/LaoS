@@ -23,13 +23,39 @@
         .on {
             font-size: 10px;
         }
+
         .edited {
             margin-left: 10px;
             color: #9e9ea6;
-            font-size: .8rem;            
+            font-size: .8rem;
         }
+
         .thumb_img {
             height: 250px;
+        }
+
+        .code {
+            color: lightgreen;
+            font-family: Consolas;
+            background-color: black;
+            font-size: 12px;
+            padding: 3px;
+        }
+
+        .preformated {
+            background-color: azure;
+            border: 1px solid antiquewhite;
+        }
+
+        .quote {
+            font-style: italic;
+            color: gray;
+            font-size: 17px;
+        }
+
+        .quote::after,
+        .quote::before {
+            content: "&#34;"
         }
     </style>
 </head>
@@ -72,7 +98,7 @@
         }
         function onMessage(obj) {
             var event = JSON.parse(obj.data);
-        
+
             if (event.action === "delete") {
                 var item = document.getElementById(event.messageId)
                 if (item != null) item.remove();
@@ -81,8 +107,7 @@
                 var formated = emoji.replace_colons(event.message);
                 formated = applyFormat(formated);
                 var date = moment(event.on).fromNow();
-                if (event.edited)
-                {
+                if (event.edited) {
                     formated += '<span class="edited">(edited)</span>';
                 }
                 writeToOutput('<span class="message"><span class="sender"><img class="userIcon" src="' + event.senderIcon + '" />' + event.senderName + ': </span>' + formated + '</span><br><span class="on" data-on="' + event.on + '">' + date + '</span>', event.messageId);
@@ -91,12 +116,13 @@
         }
 
         function applyFormat(text) {
-            return text.replace(/\b\*(\.*?)\*\b/g, '<b>$1</b>')
-                .replace(/\b\_(\.*?)\_\b/g, '<i>$1</i>')
-                .replace(/\b\~(\.*?)\~\b/g, '<del>$1</del>')
-                .replace(/\b\`(\.*?)\`\b/g, '<span class="code">$1</span>')
-                .replace(/\b\`\`\`(\.*?)\`\`\`\b/g, '<span class="preformated">$1</span>')
-                .replace(/\b\>(\.*?)\*\b/g, '<span class="quote">$1</span>');
+            return text.replace(/\*(.*?)\*/g, '<b>$1</b>')
+                .replace(/\b\_(.*?)\_\b/g, '<i>$1</i>')
+                .replace(/\~(.*?)\~/g, '<del>$1</del>')
+                .replace(/\`(.*?)\`/g, '<span class="code">$1</span>')
+                .replace(/\`\`\`(.*?)\`\`\`/g, '<span class="preformated">$1</span>')
+                .replace(/\>(.*?)\*/g, '<span class="quote">$1</span>')
+                .replace(/:troll:/g, '<img src="https://avatars.slack-edge.com/2017-05-03/178909047815_449742b3ac3c2f8ba933_72.jpg" class="userIcon" /> ');
         }
 
         function onError(evt) {
@@ -115,17 +141,14 @@
                 if (output.childElementCount === 0) {
                     output.appendChild(p);
                 }
-                else 
-                {
+                else {
                     var toInsertTs = parseFloat(messageId);
-                    for (var index = 0; index < output.childElementCount; index++)
-                    {
+                    for (var index = 0; index < output.childElementCount; index++) {
                         var item = output.childNodes[index];
-                        console.log(item);
+                        
                         var currentItemTs = parseFloat(item.id, 10);
-                        console.log("Check " + toInsertTs + ">" + currentItemTs + ";");
-                        if (toInsertTs > currentItemTs  )
-                        {
+                        
+                        if (toInsertTs > currentItemTs) {
                             output.insertBefore(p, item);
                             return;
                         }

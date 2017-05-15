@@ -30,7 +30,7 @@ namespace LaoS
             {
                 if (!String.IsNullOrEmpty(Request.Query["code"]))
                 {
-                    var authAttempt = await slackApi.DoAuthentication(Request.Query["code"], Request.Query["state"], "http://localhost/main/authorize");
+                    var authAttempt = await slackApi.DoAuthentication(Request.Query["code"], Request.Query["state"], "https://laos.now.sh/main/authorize");
                     if (authAttempt != null && !String.IsNullOrEmpty(authAttempt.Access_Token))
                     {
                         var account = new Account(authAttempt.Team_Id, authAttempt.Team_Name, authAttempt.Access_Token);
@@ -88,6 +88,11 @@ namespace LaoS
                     Console.WriteLine(exc.StackTrace);
                     return "OK";
                 }
+            });
+            Get("/proxyImage", async args =>
+            {
+                var teamId = Request.Query["urlf"];
+
             });
         }
 

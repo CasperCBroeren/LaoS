@@ -17,7 +17,7 @@ namespace LaoS.Models
         }
         public SocketMessage(SlackMessage message)
         {
-            this.SenderName = message.FullUser?.Name;
+            this.SenderName = message.FullUser?.Real_Name;
             this.SenderIcon = message.FullUser?.Profile.Image_72;
             if (message.Hidden && message.Subtype == "message_deleted")
             {
