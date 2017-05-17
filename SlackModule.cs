@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using LaoS.Interfaces;
 using Nancy.Extensions;
 using Nancy.IO;
+using System.Threading;
 
 namespace LaoS
 {
@@ -23,6 +24,8 @@ namespace LaoS
             this.messageStore = messageStore;
             this.clientManager = clientManager;
             this.slackApi = slackApi;
+          
+            
             this.accountService = accountService;
              
             Get("/", x => View["register"]);
@@ -63,10 +66,11 @@ namespace LaoS
             Get("/test", async args =>
             {
                 var teamId = Request.Query["for"];
+                this.slackApi.GetUser(teamId, "");
                 var settings = await accountService.GetAccountForTeam(teamId);
                 return View["test", settings];
             });
-            Post("/eventhandler", async (args) =>
+            Post("/eventhandler",  async (args) =>
             {
                 try
                 {
@@ -79,7 +83,12 @@ namespace LaoS
                     else
                     {
                         var message = this.Bind<EventCallback<SlackMessage>>();
-                        return await HandleMessage(message);
+                        new Thread( async () =>
+                        {
+                            Thread.CurrentThread.IsBackground = true;
+                            await HandleMessage(message); 
+                        }).Start();
+                        return "OK";
                     }
                 }
                 catch (Exception exc)

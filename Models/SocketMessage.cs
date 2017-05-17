@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using LaoS.Interfaces;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
@@ -15,8 +16,12 @@ namespace LaoS.Models
             dtDateTime = dtDateTime.AddSeconds(unixTimeStamp).ToLocalTime();
             return dtDateTime;
         }
-        public SocketMessage(SlackMessage message)
+
+        private ISlackApi slackApi;
+
+        public SocketMessage(SlackMessage message, ISlackApi slackApi)
         {
+            this.slackApi = slackApi;
             this.SenderName = message.FullUser?.Real_Name;
             this.SenderIcon = message.FullUser?.Profile.Image_72;
             if (message.Hidden && message.Subtype == "message_deleted")
@@ -30,12 +35,32 @@ namespace LaoS.Models
                 this.Action = "message";
                 this.MessageId = message.Ts.ToString(SlackMessage.DecimalFormat);
                 this.Edited = (message.Subtype == "message_changed" && (message.Previous_Message == null || message.Previous_Message.Text != message.Text));
-                this.Message = ProcessImages(message, CreateNiceLinks(message,
-                                    FixJoinMessage(message.Text, message.User)));
+                this.Message = ProcessUserMentions(ProcessImages(message, CreateNiceLinks(message,
+                                    FixJoinMessage(message.Text, message.User))));
             }
 
             this.On = UnixTimeStampToDateTime(message.Event_Ts);
 
+        }
+
+        private readonly static Regex userLinks = new Regex(@"\<a\shref=""@(.*?)""\>@(.*?)\<\/a\>", RegexOptions.Compiled);
+
+        private string ProcessUserMentions(string v)
+        {
+            return userLinks.Replace(v, MatchEval);
+        }
+
+        public string MatchEval(Match match)
+        {
+            var user = match.Groups[2].Value; 
+            var task = slackApi.GetUser(string.Empty, user);
+            task.Wait();
+            if (task.Result != null)
+            {
+                return "@"+task.Result.Name;
+            }
+            else
+                return "@" + user;
         }
 
         private string ProcessImages(SlackMessage message, string text)

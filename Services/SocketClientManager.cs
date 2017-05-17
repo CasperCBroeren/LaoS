@@ -12,12 +12,14 @@ namespace LaoS.Services
 {
     public class SocketClientManager : ISocketClientManager
     {
-        public SocketClientManager(IChannelMessageStore messageStore, IAccountService accountService)
+        public SocketClientManager(IChannelMessageStore messageStore, IAccountService accountService, ISlackApi slackApi)
         {
             this.messageStore = messageStore;
             this.accountService = accountService;
+            this.slackApi = slackApi;
         }
         private readonly List<WebSocket> clients = new List<WebSocket>();
+        private readonly ISlackApi slackApi;
         private readonly IChannelMessageStore messageStore;
         private readonly IAccountService accountService;
 
@@ -28,7 +30,7 @@ namespace LaoS.Services
             var pastMessages = await this.messageStore.GetAllPast(account.ChannelId, 10);
             foreach (var message in pastMessages)
             {
-                await Send(socket, new SocketMessage(message), CancellationToken.None);
+                await Send(socket, new SocketMessage(message, slackApi), CancellationToken.None);
             }
         }
 
@@ -51,7 +53,7 @@ namespace LaoS.Services
             {
                 if (client.State == WebSocketState.Open)
                 {
-                    await Send(client, new SocketMessage(message), CancellationToken.None);
+                    await Send(client, new SocketMessage(message, slackApi), CancellationToken.None);
                 }
                 else if (client.State == WebSocketState.Closed || client.State == WebSocketState.CloseReceived || client.State == WebSocketState.CloseSent)
                 {

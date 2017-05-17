@@ -30,8 +30,15 @@ namespace LaoS.Services
             }
             else
             {
-                await RefreshUserListFromSlack(token);
-                return this.users[id];
+                if (!String.IsNullOrEmpty(token))
+                {
+                    await RefreshUserListFromSlack(token);
+                    return this.users[id];
+                }
+                else
+                {
+                    return null;
+                }
             }
         }
 

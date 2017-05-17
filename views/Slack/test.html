@@ -55,7 +55,7 @@
 
         .quote::after,
         .quote::before {
-            content: "&#34;"
+            content: "\""
         }
     </style>
 </head>
@@ -121,7 +121,7 @@
                 .replace(/\~(.*?)\~/g, '<del>$1</del>')
                 .replace(/\`(.*?)\`/g, '<span class="code">$1</span>')
                 .replace(/\`\`\`(.*?)\`\`\`/g, '<span class="preformated">$1</span>')
-                .replace(/\>(.*?)\*/g, '<span class="quote">$1</span>')
+                .replace(/\&gt\;(.*?)$/g, '<span class="quote">$1</span>')
                 .replace(/:troll:/g, '<img src="https://avatars.slack-edge.com/2017-05-03/178909047815_449742b3ac3c2f8ba933_72.jpg" class="userIcon" /> ');
         }
 
