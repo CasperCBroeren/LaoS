@@ -8,7 +8,7 @@ namespace LaoS.Interfaces
     {
         Task AddClient(string accountToken, WebSocket socket);
         Task RemoveClient(WebSocket socket);
-        Task<bool> SendMessageToClients(SlackMessage message);
+        Task<bool> SendMessageToClients(SlackMessage message, string team);
         Task ReceivedMessageFromClient(WebSocket webSocket, WebSocketReceiveResult result, string rawResult);
     }
 }

@@ -73,6 +73,7 @@ namespace LaoS.Services
                 token = queryResult.ContinuationToken;
             } while (token != null && entities.Count < amount);
 
+      
             List<SlackMessage> result = new List<SlackMessage>();
             List<Task> items = new List<Task>();
             foreach(var item in entities)
@@ -80,7 +81,12 @@ namespace LaoS.Services
                 items.Add(item.GetItem(container, result));
             }
             await Task.WhenAll(items);
-            result.OrderByDescending(x => x.Ts);
+            result = result.OrderByDescending(x => x.Ts).ToList<SlackMessage>();
+            if (result.Count > amount)
+            {
+                result = result.Take(amount).ToList<SlackMessage>();
+            }
+
             return result;
         }
         public async Task<bool> StoreMessage(SlackMessage message)

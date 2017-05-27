@@ -33,7 +33,14 @@ namespace LaoS.Services
                 if (!String.IsNullOrEmpty(token))
                 {
                     await RefreshUserListFromSlack(token);
-                    return this.users[id];
+                    if (this.users.ContainsKey(id))
+                    {
+                        return this.users[id];
+                    }
+                    else
+                    {
+                        return null;
+                    }
                 }
                 else
                 {
@@ -108,6 +115,39 @@ namespace LaoS.Services
                 }
             }
             catch(Exception exc)
+            {
+                return null;
+            }
+        }
+
+        public async Task<string> FetchImage(string url, string teamId)
+        {
+            try
+            {
+                var account = await this.accountService.GetAccountForTeam(teamId);
+                
+                var request = WebRequest.Create(url);
+                request.Headers["Authorization"] = "Bearer " + account.SlackToken;
+                var response = (HttpWebResponse)(await request.GetResponseAsync());
+                using (var reader = new BufferedStream(response.GetResponseStream()))
+                {
+                    using (var memoryStream = new MemoryStream())
+                    {
+                        int bufferLength = 64;
+                        byte[] buffer = new byte[bufferLength];
+                        while (reader.Read(buffer, 0, bufferLength) > 0) 
+                        {
+                            memoryStream.Write(buffer, 0, bufferLength);
+                        }
+                        memoryStream.Position = 0;
+                        buffer = new byte[memoryStream.Length];
+                        memoryStream.Read(buffer, 0, (int)memoryStream.Length);
+                        return Convert.ToBase64String(buffer);
+                    }
+                   
+                }
+            }
+            catch (Exception exc)
             {
                 return null;
             }

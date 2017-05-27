@@ -26,11 +26,12 @@ namespace LaoS.Services
         public async Task AddClient(string accountToken, WebSocket socket)
         {
             var account = await accountService.GetAccountForTeam(accountToken);
-            clients.Add(socket); 
-            var pastMessages = await this.messageStore.GetAllPast(account.ChannelId, 10);
+            clients.Add(socket);
+            await this.slackApi.GetUser(account.TeamId, "");
+            var pastMessages = await this.messageStore.GetAllPast(account.ChannelId, 25);
             foreach (var message in pastMessages)
             {
-                await Send(socket, new SocketMessage(message, slackApi), CancellationToken.None);
+                await Send(socket, new SocketMessage(message, accountToken, slackApi), CancellationToken.None);
             }
         }
 
@@ -46,16 +47,23 @@ namespace LaoS.Services
             return Task.CompletedTask;
         }
 
-        public async Task<bool> SendMessageToClients(SlackMessage message)
+        public async Task<bool> SendMessageToClients(SlackMessage message, string team)
         {
             List<WebSocket> toRemove = new List<WebSocket>();
             foreach (var client in this.clients)
             {
-                if (client.State == WebSocketState.Open)
+                try
                 {
-                    await Send(client, new SocketMessage(message, slackApi), CancellationToken.None);
+                    if (client.State == WebSocketState.Open)
+                    {
+                        await Send(client, new SocketMessage(message, team, slackApi), CancellationToken.None);
+                    }
+                    else if (client.State == WebSocketState.Closed || client.State == WebSocketState.CloseReceived || client.State == WebSocketState.CloseSent)
+                    {
+                        toRemove.Add(client);
+                    }
                 }
-                else if (client.State == WebSocketState.Closed || client.State == WebSocketState.CloseReceived || client.State == WebSocketState.CloseSent)
+                catch (Exception)
                 {
                     toRemove.Add(client);
                 }

@@ -2,7 +2,9 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace LaoS.Models
 {
@@ -18,10 +20,12 @@ namespace LaoS.Models
         }
 
         private ISlackApi slackApi;
+        private string team;
 
-        public SocketMessage(SlackMessage message, ISlackApi slackApi)
+        public SocketMessage(SlackMessage message, string team, ISlackApi slackApi)
         {
             this.slackApi = slackApi;
+            this.team = team;
             this.SenderName = message.FullUser?.Real_Name;
             this.SenderIcon = message.FullUser?.Profile.Image_72;
             if (message.Hidden && message.Subtype == "message_deleted")
@@ -65,20 +69,39 @@ namespace LaoS.Models
 
         private string ProcessImages(SlackMessage message, string text)
         {
-            if (message.Attachments != null)
+            var matches = imageSearcher.Match(message.Text);
+            if (matches.Groups.Count > 1)
             {
-                foreach (var attachment in message.Attachments)
+                var url = matches.Groups[1].Value;
+                string base64Img = GetImage(url, this.team);
+                if (base64Img != null)
                 {
-                    if (!String.IsNullOrEmpty(attachment.Image_Url))
-                    {
-
-                    }
+                    string imageForClient = $@"<img src=""data:image/png;base64,{base64Img}"" width=""25%""/>";
+                    text = text.Replace(matches.Groups[0].Value, imageForClient);
                 }
             }
-            return text;
+            return imageCommentSearcher.Replace(text, string.Empty);
         }
 
-        private Regex plainLinkReplacer = new Regex(@"\<(.*?)\>", RegexOptions.Compiled);
+        private string GetImage(string url, string team)
+        {
+            var urlParts = url.Split('/');
+            var fileId = urlParts[urlParts.Length - 2];
+            var fileName = urlParts[urlParts.Length - 1];
+            var realUrl = $"https://files.slack.com/files-pri/{team}-{fileId}/download/{fileName}";
+            var task = this.slackApi.FetchImage(realUrl, team);
+            task.Wait();
+            if (task.Result != null)
+            {
+                return task.Result;
+            }
+            else
+                return null;
+        }
+
+        private Regex imageSearcher = new Regex(@"uploaded\sa\sfile\:\s\<(https://vicompany\.slack\.com/files/(.*?))\|(.*?)\>\sand\scommented\:", RegexOptions.Compiled);
+        private Regex imageCommentSearcher = new Regex(@"commented\son\s\’s\sfile\s<(https://vicompany\.slack\.com/files/(.*?))\|(.*?)\>\:", RegexOptions.Compiled);
+        private Regex plainLinkReplacer = new Regex(@"\< (.*?)\>", RegexOptions.Compiled);
         private string CreateNiceLinks(SlackMessage message, string text)
         {
             if (message.Attachments != null)

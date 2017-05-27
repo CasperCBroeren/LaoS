@@ -11,5 +11,7 @@ namespace LaoS.Interfaces
         Task<AuthAttempt> DoAuthentication(string code, string state, string redirectUri);
 
         Task<List<Channel>> GetChannelList(string token);
+
+        Task<string> FetchImage(string url, string team);
     }
 }

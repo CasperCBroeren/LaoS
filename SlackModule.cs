@@ -24,10 +24,10 @@ namespace LaoS
             this.messageStore = messageStore;
             this.clientManager = clientManager;
             this.slackApi = slackApi;
-          
-            
+
+
             this.accountService = accountService;
-             
+
             Get("/", x => View["register"]);
             Get("/authorize", async (args) =>
             {
@@ -65,44 +65,51 @@ namespace LaoS
             });
             Get("/test", async args =>
             {
-                var teamId = Request.Query["for"];
-                this.slackApi.GetUser(teamId, "");
+                var teamId = Request.Query["for"];                
                 var settings = await accountService.GetAccountForTeam(teamId);
                 return View["test", settings];
             });
-            Post("/eventhandler",  async (args) =>
-            {
-                try
-                {
-                    string raw = RequestStream.FromStream(Request.Body).AsString();
-                    var validation = this.Bind<VerificationRequest>();
-                    if (validation.Type == "url_verification")
-                    {
-                        return await HandleValidation(validation);
-                    }
-                    else
-                    {
-                        var message = this.Bind<EventCallback<SlackMessage>>();
-                        new Thread( async () =>
-                        {
-                            Thread.CurrentThread.IsBackground = true;
-                            await HandleMessage(message); 
-                        }).Start();
-                        return "OK";
-                    }
-                }
-                catch (Exception exc)
-                {
-                    Console.WriteLine(exc.Message);
-                    Console.WriteLine(exc.StackTrace);
-                    return "OK";
-                }
-            });
-            Get("/proxyImage", async args =>
-            {
-                var teamId = Request.Query["urlf"];
+            Post("/eventhandler", async (args) =>
+           {
+               string raw = string.Empty;
+               try
+               {
+                   raw = RequestStream.FromStream(Request.Body).AsString();
+                   var validation = this.Bind<VerificationRequest>();
+                   if (validation.Type == "url_verification")
+                   {
+                       return await HandleValidation(validation);
+                   }
+                   else
+                   {
 
-            });
+                       
+                       new Thread(async () =>
+                       {
+                           var message = this.Bind<EventCallback<SlackMessage>>();
+                           try
+                              {
+                                  Thread.CurrentThread.IsBackground = true;
+                                  await HandleMessage(message);
+                              }
+                              catch (Exception exc)
+                              {
+
+                              }
+                          }).Start();
+                       return "OK";
+
+                   }
+               }
+               catch (Exception exc)
+               {
+                   Console.WriteLine("Raw: " + raw);
+                   Console.WriteLine(exc.Message);
+                   Console.WriteLine(exc.StackTrace);
+                   return "OK";
+               }
+           });
+           
         }
 
         private async Task<string> HandleMessage(EventCallback<SlackMessage> eventCallback)
@@ -131,7 +138,7 @@ namespace LaoS
                 {
                     await this.messageStore.StoreMessage(message);
                 }
-                await this.clientManager.SendMessageToClients(message);
+                await this.clientManager.SendMessageToClients(message, eventCallback.Team_Id);
                 Console.WriteLine($"{message.FullUser?.Name}: {message.Text} ");
             }
             return "OK";
