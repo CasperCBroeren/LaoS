@@ -47,7 +47,7 @@ namespace LaoS.Models
 
         }
 
-        private readonly static Regex userLinks = new Regex(@"\<a\shref=""@(.*?)""\>@(.*?)\<\/a\>", RegexOptions.Compiled);
+        private readonly static Regex userLinks = new Regex(@"\<@(.*?)\>", RegexOptions.Compiled);
 
         private string ProcessUserMentions(string v)
         {
@@ -56,7 +56,7 @@ namespace LaoS.Models
 
         public string MatchEval(Match match)
         {
-            var user = match.Groups[2].Value; 
+            var user = match.Groups[1].Value; 
             var task = slackApi.GetUser(string.Empty, user);
             task.Wait();
             if (task.Result != null)
