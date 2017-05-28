@@ -120,12 +120,12 @@ namespace LaoS.Services
             }
         }
 
-        public async Task<string> FetchImage(string url, string teamId)
+        public async Task<byte[]> FetchImage(string imgId, string imgName, string teamId)
         {
             try
             {
                 var account = await this.accountService.GetAccountForTeam(teamId);
-                
+                var url = $"https://files.slack.com/files-pri/{teamId}-{imgId}/download/{imgName}";
                 var request = WebRequest.Create(url);
                 request.Headers["Authorization"] = "Bearer " + account.SlackToken;
                 var response = (HttpWebResponse)(await request.GetResponseAsync());
@@ -140,9 +140,7 @@ namespace LaoS.Services
                             memoryStream.Write(buffer, 0, bufferLength);
                         }
                         memoryStream.Position = 0;
-                        buffer = new byte[memoryStream.Length];
-                        memoryStream.Read(buffer, 0, (int)memoryStream.Length);
-                        return Convert.ToBase64String(buffer);
+                        return memoryStream.ToArray();
                     }
                    
                 }

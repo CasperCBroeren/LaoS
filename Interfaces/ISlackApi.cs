@@ -1,5 +1,6 @@
 ﻿using LaoS.Models;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace LaoS.Interfaces
@@ -12,6 +13,6 @@ namespace LaoS.Interfaces
 
         Task<List<Channel>> GetChannelList(string token);
 
-        Task<string> FetchImage(string url, string team);
+        Task<byte[]> FetchImage(string imgId, string imgName, string team);
     }
 }

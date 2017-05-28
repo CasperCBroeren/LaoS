@@ -76,7 +76,7 @@ namespace LaoS.Models
                 string base64Img = GetImage(url, this.team);
                 if (base64Img != null)
                 {
-                    string imageForClient = $@"<img src=""data:image/png;base64,{base64Img}"" width=""25%""/>";
+                    string imageForClient = $@"<img src=""{base64Img}"" width=""25%""/>";
                     text = text.Replace(matches.Groups[0].Value, imageForClient);
                 }
             }
@@ -88,15 +88,8 @@ namespace LaoS.Models
             var urlParts = url.Split('/');
             var fileId = urlParts[urlParts.Length - 2];
             var fileName = urlParts[urlParts.Length - 1];
-            var realUrl = $"https://files.slack.com/files-pri/{team}-{fileId}/download/{fileName}";
-            var task = this.slackApi.FetchImage(realUrl, team);
-            task.Wait();
-            if (task.Result != null)
-            {
-                return task.Result;
-            }
-            else
-                return null;
+          
+            return $"https://laos.now.sh/main/img?team={team}&imgId={fileId}&imgName={fileName}";
         }
 
         private Regex imageSearcher = new Regex(@"uploaded\sa\sfile\:\s\<(https://vicompany\.slack\.com/files/(.*?))\|(.*?)\>\sand\scommented\:", RegexOptions.Compiled);
