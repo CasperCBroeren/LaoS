@@ -13,9 +13,9 @@ namespace LaoS.Services
 
         public Task DeleteMessage(SlackMessage message)
         {
-            if (this.store.ContainsKey(message.Deleted_Ts.ToString(SlackMessage.DecimalFormat)))
+            if (this.store.ContainsKey(message.Deleted_Ts))
             {
-                this.store.Remove(message.Deleted_Ts.ToString(SlackMessage.DecimalFormat));
+                this.store.Remove(message.Deleted_Ts);
             }
             return Task.CompletedTask;
         }
@@ -35,9 +35,9 @@ namespace LaoS.Services
         }
         public Task<bool> StoreMessage(SlackMessage message)
         {
-            if (!this.store.ContainsKey(message.Event_Ts.ToString(SlackMessage.DecimalFormat)))
+            if (!this.store.ContainsKey(message.Event_Ts))
             {
-                this.store.Add(message.Event_Ts.ToString(SlackMessage.DecimalFormat), message);
+                this.store.Add(message.Event_Ts, message);
             }
             return Task.FromResult(true);
         }
@@ -46,9 +46,9 @@ namespace LaoS.Services
         {
             SlackMessage result = message;
             var tsOfPrev = message.Previous_Message != null ? message.Previous_Message.Ts : message.Message.Ts;
-            if (this.store.ContainsKey(tsOfPrev.ToString(SlackMessage.DecimalFormat)))
+            if (this.store.ContainsKey(tsOfPrev))
             {
-                var original = this.store[tsOfPrev.ToString(SlackMessage.DecimalFormat)];
+                var original = this.store[tsOfPrev];
                 original.Text = message.Message.Text;
                 original.Subtype = message.Subtype;
                 original.Attachments = message.Message.Attachments;

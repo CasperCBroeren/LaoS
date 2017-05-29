@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -31,19 +32,19 @@ namespace LaoS.Models
             if (message.Hidden && message.Subtype == "message_deleted")
             {
                 this.Action = "delete";
-                this.MessageId = message.Deleted_Ts.ToString(SlackMessage.DecimalFormat);
+                this.MessageId = message.Deleted_Ts;
             }
             else
             {
 
                 this.Action = "message";
-                this.MessageId = message.Ts.ToString(SlackMessage.DecimalFormat);
+                this.MessageId = message.Ts;
                 this.Edited = (message.Subtype == "message_changed" && (message.Previous_Message == null || message.Previous_Message.Text != message.Text));
                 this.Message = ProcessUserMentions(ProcessImages(message, CreateNiceLinks(message,
                                     FixJoinMessage(message.Text, message.User))));
             }
 
-            this.On = UnixTimeStampToDateTime(message.Event_Ts);
+            this.On = UnixTimeStampToDateTime(double.Parse(message.Event_Ts, new CultureInfo("en-US")));
 
         }
 
@@ -76,7 +77,7 @@ namespace LaoS.Models
                 string base64Img = GetImage(url, this.team);
                 if (base64Img != null)
                 {
-                    string imageForClient = $@"<img src=""{base64Img}"" width=""25%""/>";
+                    string imageForClient = $@"<img src=""{base64Img}"" class=""postedImage""/>";
                     text = text.Replace(matches.Groups[0].Value, imageForClient);
                 }
             }

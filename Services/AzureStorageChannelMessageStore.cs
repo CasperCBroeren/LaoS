@@ -50,7 +50,7 @@ namespace LaoS.Services
             var table = await GetTableRef();
             var container = await GetContainerRef();
         
-            TableOperation retrieveOperation = TableOperation.Retrieve<AzureStorageRow<SlackMessage>>(message.Channel, message.Deleted_Ts.ToString(SlackMessage.DecimalFormat));
+            TableOperation retrieveOperation = TableOperation.Retrieve<AzureStorageRow<SlackMessage>>(message.Channel, message.Deleted_Ts);
             TableResult retrievedResult = await table.ExecuteAsync(retrieveOperation);
             var deleteEntity = (AzureStorageRow<SlackMessage>)retrievedResult.Result;
             TableOperation deleteOperation = TableOperation.Delete(deleteEntity);
@@ -94,7 +94,7 @@ namespace LaoS.Services
             var container = await GetContainerRef();
             var table = await GetTableRef();
 
-            var toStore = new AzureStorageRow<SlackMessage>(message.Channel, message.Event_Ts.ToString(SlackMessage.DecimalFormat));
+            var toStore = new AzureStorageRow<SlackMessage>(message.Channel, message.Event_Ts);
             await toStore.SetItem(container, message);
             
             TableOperation insertOperation = TableOperation.InsertOrReplace(toStore);
@@ -108,7 +108,7 @@ namespace LaoS.Services
             var container = await GetContainerRef();
 
             var tsOfPrev = message.Previous_Message != null ? message.Previous_Message.Ts : message.Message.Ts;
-            var toUpdate = new AzureStorageRow<SlackMessage>(message.Channel, tsOfPrev.ToString(SlackMessage.DecimalFormat));
+            var toUpdate = new AzureStorageRow<SlackMessage>(message.Channel, tsOfPrev);
             var totalMessage = await toUpdate.GetItem(container);
            
             if (totalMessage != null)

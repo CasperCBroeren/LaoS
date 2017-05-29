@@ -34,7 +34,7 @@ namespace LaoS.Models
 
         public User FullUser { get; set; }  
 
-        public double Ts { get; set; }
+        public string Ts { get; set; }
 
         public bool Is_Starred { get; set; }
 
@@ -44,17 +44,17 @@ namespace LaoS.Models
 
         public string Text { get; set; }
         
-        public double Deleted_Ts { get; set; }
+        public string Deleted_Ts { get; set; }
 
-        private double event_Ts;
-        public double Event_Ts { get
+        private string event_Ts;
+        public string Event_Ts { get
             {
                 return event_Ts;
             }
             set
             {
                 event_Ts = value;
-                RowKey = value.ToString(DecimalFormat);
+                RowKey = value;
             }
         }
         
