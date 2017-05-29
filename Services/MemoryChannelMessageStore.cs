@@ -33,6 +33,12 @@ namespace LaoS.Services
             }
             return Task.FromResult(result);
         }
+
+        public Task<SlackMessage> GetMessage(string channel, string ts)
+        {
+            return Task.FromResult(this.store.ContainsKey(ts) ? this.store[ts] : null);
+        }
+
         public Task<bool> StoreMessage(SlackMessage message)
         {
             if (!this.store.ContainsKey(message.Event_Ts))

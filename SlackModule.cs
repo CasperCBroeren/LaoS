@@ -65,7 +65,7 @@ namespace LaoS
             });
             Get("/test", async args =>
             {
-                var teamId = Request.Query["for"];                
+                var teamId = Request.Query["for"];
                 var settings = await accountService.GetAccountForTeam(teamId);
                 return View["test", settings];
             });
@@ -75,28 +75,38 @@ namespace LaoS
                try
                {
                    raw = RequestStream.FromStream(Request.Body).AsString();
+                   //Console.WriteLine(raw);
                    var validation = this.Bind<VerificationRequest>();
+
                    if (validation.Type == "url_verification")
                    {
                        return await HandleValidation(validation);
                    }
                    else
                    {
-
-                       
                        new Thread(async () =>
                        {
-                           var message = this.Bind<EventCallback<SlackMessage>>();
+                           Thread.CurrentThread.IsBackground = true;
                            try
-                              {
-                                  Thread.CurrentThread.IsBackground = true;
-                                  await HandleMessage(message);
-                              }
-                              catch (Exception exc)
-                              {
-
-                              }
-                          }).Start();
+                           {
+                              var liteMessage = this.Bind<EventCallback<LiteMessage>>();
+                               if (liteMessage.Event.Type == "reaction_added" || liteMessage.Event.Type == "reaction_removed")
+                               {
+                                   var reactionEvent = this.Bind<EventCallback<ReactionEvent>>();
+                                   await HandleReaction(reactionEvent);
+                               }
+                               else
+                               {
+                                   var message = this.Bind<EventCallback<SlackMessage>>();
+                                   await HandleMessage(message);
+                               }
+                           }
+                           catch (Exception exc)
+                           {
+                               Console.WriteLine(exc.Message);
+                               Console.WriteLine(exc.StackTrace);
+                           }
+                       }).Start();
                        return "OK";
 
                    }
@@ -109,7 +119,34 @@ namespace LaoS
                    return "OK";
                }
            });
-           
+
+        }
+
+        private async Task HandleReaction(EventCallback<ReactionEvent> eventCallback)
+        {
+            var accountSettings = await this.accountService.GetAccountForTeam(eventCallback.Team_Id);
+            var reaction = eventCallback.Event;
+            Console.WriteLine(reaction.Type);
+            if (reaction.Item.Channel == accountSettings.ChannelId)
+            {
+                var message = await this.messageStore.GetMessage(reaction.Item.Channel, reaction.Item.Ts);
+                Console.WriteLine($"<---");
+                var fullUser = await this.slackApi.GetUser(eventCallback.Team_Id, reaction.User);
+                Console.WriteLine($"Message {message.Text} got reaction from {fullUser.Name}: {reaction.Reaction}!");
+                if (reaction.Type == "reaction_added")
+                {
+                    if (message.Reactions == null) message.Reactions = new System.Collections.Generic.List<Reaction>();
+                    message.Reactions.Add(new Reaction() { Name = reaction.Reaction, User = reaction.User, FullUser = fullUser.Real_Name });
+                }
+                else
+                {
+                    Console.WriteLine($"Remove {message.Reactions.RemoveAll(x => x.Name == reaction.Reaction && x.User == reaction.User)}");
+                }
+                Console.WriteLine($"--->");
+                message = await this.messageStore.UpdateMessage(message);
+                await this.clientManager.SendMessageToClients(message, eventCallback.Team_Id);
+                Console.WriteLine($"storred");
+            }
         }
 
         private async Task<string> HandleMessage(EventCallback<SlackMessage> eventCallback)
@@ -150,4 +187,6 @@ namespace LaoS
             return Task.FromResult(validation.Challenge);
         }
     }
+
+    
 }

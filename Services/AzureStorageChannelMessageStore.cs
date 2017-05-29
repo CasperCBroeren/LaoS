@@ -1,12 +1,13 @@
 using System.Collections.Generic;
 using LaoS.Models;
-using LaoS.Interfaces; 
+using LaoS.Interfaces;
 using Microsoft.WindowsAzure.Storage.Auth;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage.Blob;
 using System.Linq;
+using System;
 
 namespace LaoS.Services
 {
@@ -103,21 +104,22 @@ namespace LaoS.Services
         }
 
         public async Task<SlackMessage> UpdateMessage(SlackMessage message)
-        {
-            var table = await GetTableRef();
+        { 
             var container = await GetContainerRef();
 
-            var tsOfPrev = message.Previous_Message != null ? message.Previous_Message.Ts : message.Message.Ts;
+            var tsOfPrev = message.Previous_Message != null ? message.Previous_Message.Ts :
+                             message.Message != null ? message.Message.Ts : message.Ts;
             var toUpdate = new AzureStorageRow<SlackMessage>(message.Channel, tsOfPrev);
             var totalMessage = await toUpdate.GetItem(container);
            
             if (totalMessage != null)
             {
                 var original = totalMessage;
-                original.Text = message.Message.Text;
+                original.Text = message.Message == null ? message.Text : message.Message.Text;
                 original.Subtype = message.Subtype;
-                original.Attachments = message.Message.Attachments;
+                original.Attachments = message.Message == null ? message.Attachments : message.Message.Attachments;
                 original.Previous_Message = message.Previous_Message;
+                original.Reactions = message.Reactions;
                 await this.StoreMessage(original);
                 return original;
             }
@@ -126,6 +128,13 @@ namespace LaoS.Services
                await this.StoreMessage(message);
             }
             return message;
+        }
+
+        public async Task<SlackMessage> GetMessage(string channel, string ts)
+        { 
+            var container = await GetContainerRef();
+            var toUpdate = new AzureStorageRow<SlackMessage>(channel, ts);
+            return await toUpdate.GetItem(container);
         }
     }
 }

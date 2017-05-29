@@ -10,6 +10,7 @@ namespace LaoS.Interfaces
 
         Task<bool> StoreMessage(SlackMessage message);
         Task DeleteMessage(SlackMessage message);
+        Task<SlackMessage> GetMessage(string channel, string ts);
         Task<SlackMessage> UpdateMessage(SlackMessage message);
     }
 }

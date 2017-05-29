@@ -40,7 +40,7 @@ namespace LaoS.Models
 
         public List<string> Pinned_To { get; set; }
 
-        public List<SocketReaction> Reactions { get; set; }
+        public List<Reaction> Reactions { get; set; }
 
         public string Text { get; set; }
         

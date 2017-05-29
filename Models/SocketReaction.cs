@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace LaoS.Models
 {
@@ -6,7 +7,7 @@ namespace LaoS.Models
     {
         [JsonProperty("type")]
         public string Type { get; set; }
-        [JsonProperty("count")]
-        public int Count { get; set; }
+        [JsonProperty("users")] 
+        public List<string> Users { get; set; }
     }
 }

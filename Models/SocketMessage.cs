@@ -3,9 +3,8 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Net;
+using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace LaoS.Models
 {
@@ -40,15 +39,42 @@ namespace LaoS.Models
                 this.Action = "message";
                 this.MessageId = message.Ts;
                 this.Edited = (message.Subtype == "message_changed" && (message.Previous_Message == null || message.Previous_Message.Text != message.Text));
-                this.Message = ProcessUserMentions(ProcessImages(message, CreateNiceLinks(message,
+                this.Message = ProcessUserMentions(
+                                CreateNiceLinks(message,
+                                  ProcessImages(message, 
                                     FixJoinMessage(message.Text, message.User))));
+                this.Reactions = ToSocketReactions(message.Reactions);
             }
 
             this.On = UnixTimeStampToDateTime(double.Parse(message.Event_Ts, new CultureInfo("en-US")));
 
         }
 
+        private List<SocketReaction> ToSocketReactions(List<Reaction> reactions)
+        {
+            var items = new Dictionary<string, SocketReaction>();
+            if (reactions != null)
+            {
+                foreach (var r in reactions)
+                {
+                    if (items.ContainsKey(r.Name))
+                    {
+                        items[r.Name].Users.Add(r.FullUser);
+                    }
+                    else
+                    {
+                        items.Add(r.Name, new SocketReaction() { Type = r.Name, Users = new List<string>() { r.FullUser } });
+                    }
+                }
+            }
+
+            return items.Values.ToList().OrderBy(x => x.Type).ToList();
+        }
+
         private readonly static Regex userLinks = new Regex(@"\<@(.*?)\>", RegexOptions.Compiled);
+        private Regex imageSearcher = new Regex(@"uploaded\sa\sfile\:\s\<(https://(.*?)\.slack\.com/files/(.*?))\|(.*?)\>", RegexOptions.Compiled);
+        private Regex imageCommentSearcher = new Regex(@"commented\son\s\’s\sfile\s<(https://vicompany\.slack\.com/files/(.*?))\|(.*?)\>\:", RegexOptions.Compiled);
+        private Regex plainLinkReplacer = new Regex(@"\<(htt(.*?))\>", RegexOptions.Compiled);
 
         private string ProcessUserMentions(string v)
         {
@@ -74,17 +100,17 @@ namespace LaoS.Models
             if (matches.Groups.Count > 1)
             {
                 var url = matches.Groups[1].Value;
-                string base64Img = GetImage(url, this.team);
-                if (base64Img != null)
+                string localImageUrl = GetLocalImageUrl(url, this.team);
+                if (localImageUrl != null)
                 {
-                    string imageForClient = $@"<img src=""{base64Img}"" class=""postedImage""/>";
+                    string imageForClient = $@"<img src=""{localImageUrl}"" class=""postedImage""/>";
                     text = text.Replace(matches.Groups[0].Value, imageForClient);
                 }
             }
             return imageCommentSearcher.Replace(text, string.Empty);
         }
 
-        private string GetImage(string url, string team)
+        private string GetLocalImageUrl(string url, string team)
         {
             var urlParts = url.Split('/');
             var fileId = urlParts[urlParts.Length - 2];
@@ -93,9 +119,7 @@ namespace LaoS.Models
             return $"https://laos.now.sh/main/img?team={team}&imgId={fileId}&imgName={fileName}";
         }
 
-        private Regex imageSearcher = new Regex(@"uploaded\sa\sfile\:\s\<(https://vicompany\.slack\.com/files/(.*?))\|(.*?)\>\sand\scommented\:", RegexOptions.Compiled);
-        private Regex imageCommentSearcher = new Regex(@"commented\son\s\’s\sfile\s<(https://vicompany\.slack\.com/files/(.*?))\|(.*?)\>\:", RegexOptions.Compiled);
-        private Regex plainLinkReplacer = new Regex(@"\< (.*?)\>", RegexOptions.Compiled);
+
         private string CreateNiceLinks(SlackMessage message, string text)
         {
             if (message.Attachments != null)
