@@ -1,6 +1,7 @@
 ﻿using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -43,15 +44,22 @@ namespace LaoS.Models
         public async Task<T> GetItem(CloudBlobContainer container, List<T> result =null)
         {
             var serializer = new JsonSerializer();
-            var blob = await container.GetBlobReferenceFromServerAsync(this.PartitionKey + this.RowKey);
-            using (var stream = new MemoryStream())
+            try
             {
-                await blob.DownloadToStreamAsync(stream);
-                stream.Seek(0, SeekOrigin.Begin);
-                var item = serializer.Deserialize<T>(new JsonTextReader(new StreamReader(stream)));
-                if (result != null)
-                    result.Add(item);
-                return item;
+                var blob = await container.GetBlobReferenceFromServerAsync(this.PartitionKey + this.RowKey);
+                using (var stream = new MemoryStream())
+                {
+                    await blob.DownloadToStreamAsync(stream);
+                    stream.Seek(0, SeekOrigin.Begin);
+                    var item = serializer.Deserialize<T>(new JsonTextReader(new StreamReader(stream)));
+                    if (result != null)
+                        result.Add(item);
+                    return item;
+                }
+            }
+            catch(Exception)
+            {
+                return default(T);
             }
         }
 
