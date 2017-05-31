@@ -43,6 +43,7 @@ namespace LaoS.Models
 
         public async Task<T> GetItem(CloudBlobContainer container, List<T> result =null)
         {
+             
             var serializer = new JsonSerializer();
             try
             {
@@ -59,7 +60,18 @@ namespace LaoS.Models
             }
             catch(Exception)
             {
-                return default(T);
+                string key = this.PartitionKey + this.RowKey.Substring(0, this.RowKey.Length - 1);
+                Console.WriteLine(key);
+                var blob = await container.GetBlobReferenceFromServerAsync(key);
+                using (var stream = new MemoryStream())
+                {
+                    await blob.DownloadToStreamAsync(stream);
+                    stream.Seek(0, SeekOrigin.Begin);
+                    var item = serializer.Deserialize<T>(new JsonTextReader(new StreamReader(stream)));
+                    if (result != null)
+                        result.Add(item);
+                    return item;
+                }
             }
         }
 

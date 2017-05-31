@@ -92,6 +92,7 @@ namespace LaoS
                               var liteMessage = this.Bind<EventCallback<LiteMessage>>();
                                if (liteMessage.Event.Type == "reaction_added" || liteMessage.Event.Type == "reaction_removed")
                                {
+                                   Console.WriteLine(raw);
                                    var reactionEvent = this.Bind<EventCallback<ReactionEvent>>();
                                    await HandleReaction(reactionEvent);
                                }
