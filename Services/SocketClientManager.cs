@@ -7,6 +7,7 @@ using System.Net.WebSockets;
 using System.Threading.Tasks;
 using System.Threading;
 using Newtonsoft.Json;
+using System.Linq;
 
 namespace LaoS.Services
 {
@@ -29,10 +30,8 @@ namespace LaoS.Services
             clients.Add(socket);
             await this.slackApi.GetUser(account.TeamId, "");
             var pastMessages = await this.messageStore.GetAllPast(account.ChannelId, 25);
-            foreach (var message in pastMessages)
-            {
-                await Send(socket, new SocketMessage(message, accountToken, slackApi), CancellationToken.None);
-            }
+            var tasks = pastMessages.Select(message => Send(socket, new SocketMessage(message, accountToken, slackApi), CancellationToken.None));
+            await Task.WhenAll(tasks);
         }
 
         private async Task Send(WebSocket client, SocketMessage socketMessage, CancellationToken cancelToken)

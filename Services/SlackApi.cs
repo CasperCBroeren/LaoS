@@ -24,6 +24,11 @@ namespace LaoS.Services
 
         public async Task<User> GetUser(string token, string id)
         {
+            if (string.IsNullOrEmpty(id) && this.users != null && this.users.Count > 0)
+            {
+                return null;
+            }
+
             if (this.users.ContainsKey(id))
             {
                 return this.users[id];
