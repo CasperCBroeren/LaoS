@@ -48,6 +48,8 @@ namespace LaoS.Services
 
         public async Task<bool> SendMessageToClients(SlackMessage message, string team)
         {
+            // just ignore threads
+            if (!String.IsNullOrEmpty(message.Thread_Ts)) return true;
             List<WebSocket> toRemove = new List<WebSocket>();
             foreach (var client in this.clients)
             {

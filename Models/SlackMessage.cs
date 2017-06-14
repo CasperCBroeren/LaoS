@@ -11,7 +11,7 @@ namespace LaoS.Models
         {
 
         }
-        
+
         public string Type { get; set; }
 
         public string Subtype { get; set; }
@@ -32,7 +32,7 @@ namespace LaoS.Models
 
         public string User { get; set; }
 
-        public User FullUser { get; set; }  
+        public User FullUser { get; set; }
 
         public string Ts { get; set; }
 
@@ -43,7 +43,7 @@ namespace LaoS.Models
         public List<Reaction> Reactions { get; set; }
 
         public string Text { get; set; }
-        
+
         public string Deleted_Ts { get; set; }
 
         private string event_Ts;
@@ -57,7 +57,9 @@ namespace LaoS.Models
                 RowKey = value;
             }
         }
-        
+
+        public string Thread_Ts { get; set;}
+
         public EditMessage Message { get; set; }
 
         public List<Attachment> Attachments { get; set; }
