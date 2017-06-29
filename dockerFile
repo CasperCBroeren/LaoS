@@ -2,6 +2,7 @@ FROM microsoft/aspnetcore
 LABEL name="Laos"
 ENTRYPOINT ["dotnet", "LaoS.dll"]
 ARG source=.
+ENV ASPNETCORE_URLS http://+:80
 WORKDIR /LaoS
 EXPOSE 80
 COPY $source .
